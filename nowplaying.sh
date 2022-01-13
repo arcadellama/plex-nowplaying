@@ -1,6 +1,33 @@
 #!/bin/sh
 
-## Global Variables
+# nowplaying.sh – A simple, POSIX-compliant shell script to print the
+# "Now Playing" status of a local Plex Server to stdout.
+#
+# Copyright 2022 Justin Teague <arcadellama@posteo.net>
+#
+########################################################################
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the “Software”),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHE
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+########################################################################
+
+PRG_NAM="nowplaying.sh"
+PRG_VERSION="0.1"
+
 PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
 MAX_WIDTH=${MAX_WIDTH:-100}     # Set the maximum width of print
 TERM_MARGIN=${TERM_MARGIN:-8}   # Set the margin for term
@@ -109,7 +136,8 @@ parse_plexml() {
                 printf "Now Playing on Plex:\n"
                 __count="$((__count+1))"
             fi
-            print_nowplaying "$__count" "$__album" "$__track" "$__title" "$__user" "$__type"
+            print_nowplaying "$__count" "$__album" "$__track" \
+                "$__title" "$__user" "$__type"
             __count="$((__count+1))"
 
             continue
