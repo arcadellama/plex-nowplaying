@@ -25,7 +25,7 @@
 # DEALINGS IN THE SOFTWARE.
 ########################################################################
 
-PRG_NAM="nowplaying.sh"
+PRGNAM="nowplaying.sh"
 PRG_VERSION="0.1"
 
 PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
@@ -34,6 +34,18 @@ TERM_MARGIN=${TERM_MARGIN:-8}   # Set the margin for term
 
 ## Functions
 
+print_help() {
+cat <<EOF
+nowplaying.sh – a simple, POSIX-compliant script to print the "Now Playing"
+                status to stdout.
+
+    Usage: '"$PRGNAM" -s "<IP Address of Plex Server>'"
+
+                -s  IP address(es) of Plex Server in quotes, separated
+                    by spaces.
+
+EOF
+}
 print_separator() {
     __charcount="$1"
     __separator="."
@@ -147,6 +159,17 @@ parse_plexml() {
     "$(get_plexml)"
 EOF
 }
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in 
+        -s)
+            PLEX_HOST="$2"
+            shift 2 ;;
+        -h)
+            print_help
+            exit 0 ;;
+    esac
+done
 
 parse_plexml
 
