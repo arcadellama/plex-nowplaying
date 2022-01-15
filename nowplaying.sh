@@ -77,27 +77,63 @@ print_nowplaying() {
 
     case "$__type" in
         episode)
-            __title="${__album}: ${__track}"
+              __title="${__album}: ${__track}"
 
-            if [ "${#__title}" -gt "$__col2" ]; then
-                __title="$(truncate_string "$__title" "$__col2")"
-            fi
+              if [ "${#__title}" -gt "$__col2" ]; then
+                  
+                  if [ "${#__album}" -gt "$__col2" ]; then
+                  __album="$(truncate_string "$__album" "$__col2")"
+                  fi
+                  
+                  if [ "${#__track}" -gt "$__col2" ]; then
+                  __track="$(truncate_string "$__track" "$__col2")"
+                  fi
+                  
+                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                      "$__count." "$__album" ""
+                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                      "" "$__track" "$__user"
+
+                else
+
+                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                      "$__count." "$__title" "$__user"
+              fi
             ;;
+
           track)
               __title="${__album}: ${__track}"
 
               if [ "${#__title}" -gt "$__col2" ]; then
-                  __title="$(truncate_string "$__title" "$__col2")"
+                  
+                  if [ "${#__album}" -gt "$__col2" ]; then
+                  __album="$(truncate_string "$__album" "$__col2")"
+                  fi
+                  
+                  if [ "${#__track}" -gt "$__col2" ]; then
+                  __track="$(truncate_string "$__track" "$__col2")"
+                  fi
+                  
+                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                      "$__count." "$__album" ""
+                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                      "" "$__track" "$__user"
+
+                else
+
+                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                      "$__count." "$__title" "$__user"
               fi
             ;;
+
           movie)
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
+              printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                  "$__count." "$__title" "$__user"
             ;;
     esac
-    printf "%${__col1}s %-${__col2}s %${__col3}s\n" "$__count." "$__title" "$__user"
-
 }
 
 get_host() {
