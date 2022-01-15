@@ -83,7 +83,7 @@ print_nowplaying() {
     fi
 
     __col1="$((${#__count} + 1))"
-    __col3="$((${#__user} + 2))"
+    __col3="$((${#__user} + 1))"
     __col2="$((__columns - (__col3 +  __col1) - 4))"
 
     case "$__type" in
@@ -100,14 +100,14 @@ print_nowplaying() {
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
 
-                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "$__count." "$__album" ""
-                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
                 else
 
-                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
-                      "$__count." "$__title" "$__user"
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
               fi
             ;;
 
@@ -115,24 +115,24 @@ print_nowplaying() {
               __title="${__album}: ${__track}"
 
               if [ "${#__title}" -gt "$__col2" ]; then
-                  
+
                   if [ "${#__album}" -gt "$__col2" ]; then
                   __album="$(truncate_string "$__album" "$__col2")"
                   fi
-                  
+
                   if [ "${#__track}" -gt "$__col2" ]; then
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
-                  
-                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
-                      "$__count." "$__album" ""
-                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
-                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
 
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__count." "$__album" ""
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
                 else
 
-                  printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
-                      "$__count." "$__title" "$__user"
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
+
               fi
             ;;
 
@@ -140,7 +140,7 @@ print_nowplaying() {
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
-              printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                   "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
             ;;
     esac
@@ -226,5 +226,6 @@ while [ "$#" -gt 0 ]; do
 done
 
 parse_plexml
+printf "\n"
 
-#exit 0
+exit 0
