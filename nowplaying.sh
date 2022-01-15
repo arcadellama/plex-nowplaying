@@ -29,6 +29,7 @@ PRG_VERSION="0.2"
 PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
 MAX_WIDTH=${MAX_WIDTH:-100}     # Set the maximum width of print
 TERM_MARGIN=${TERM_MARGIN:-8}   # Set the margin for term
+DELIMITER="."
 
 ## Functions
 
@@ -58,6 +59,16 @@ truncate_string() {
     printf "%s..." "$__string"
 }
 
+print_delim() {
+    __word="$1"
+    __width="$2"
+    __count=$((__width - __word))
+    while [ "$__count" -gt 0 ]; do
+        printf "%s" "$DELIMITER"
+        __count=$((__count - 1))
+    done
+}
+
 print_nowplaying() {
     __count="$1"
     __album="$2"
@@ -80,20 +91,19 @@ print_nowplaying() {
               __title="${__album}: ${__track}"
 
               if [ "${#__title}" -gt "$__col2" ]; then
-                  
+
                   if [ "${#__album}" -gt "$__col2" ]; then
                   __album="$(truncate_string "$__album" "$__col2")"
                   fi
-                  
+
                   if [ "${#__track}" -gt "$__col2" ]; then
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
-                  
+
                   printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
                       "$__count." "$__album" ""
                   printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
-                      "" "$__track" "$__user"
-
+                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
                 else
 
                   printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
@@ -117,7 +127,7 @@ print_nowplaying() {
                   printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
                       "$__count." "$__album" ""
                   printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
-                      "" "$__track" "$__user"
+                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
 
                 else
 
@@ -131,7 +141,7 @@ print_nowplaying() {
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
               printf "%${__col1}s %-${__col2}s %${__col3}s\n" \
-                  "$__count." "$__title" "$__user"
+                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
             ;;
     esac
 }
