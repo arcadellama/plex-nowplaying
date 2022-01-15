@@ -5,7 +5,6 @@
 #
 # Copyright 2022 Justin Teague <arcadellama@posteo.net>
 #
-########################################################################
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the “Software”),
 # to deal in the Software without restriction, including without limitation
@@ -23,7 +22,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-########################################################################
 
 PRGNAM="nowplaying.sh"
 PRG_VERSION="0.1"
@@ -46,23 +44,18 @@ nowplaying.sh – a simple, POSIX-compliant script to print the "Now Playing"
 
 EOF
 }
-print_separator() {
-    __charcount="$1"
-    __separator="."
-    __tput="$(command -v tput)"
-    __columns="$("$__tput" cols)"
-    __space=0
 
-    if [ "$__columns" -gt "$MAX_WIDTH" ]; then
-       __columns="$MAX_WIDTH"
-    fi
+truncate_string() {
+    __string="$1"
+    __width="$2"
+    __count="$(((${#__string} - __width) + 3))" # 3 additional for elipses
 
-    __space=$(((__columns - TERM_MARGIN) - __charcount))
-
-    while [ "$__space" -gt 0 ]; do
-        printf "%s" "$__separator"
-        __space=$((__space - 1))
+    while [ "$__count" -gt 0 ]; do
+        __string="${__string%?}"
+        __count="$((__count - 1))"
     done
+
+    printf "%s..." "$__string"
 }
 
 print_nowplaying() {
@@ -72,24 +65,39 @@ print_nowplaying() {
     __title="$4"
     __user="$5"
     __type="$6"
-    printf "  " 
-    printf "%s. " "$__count"
+    __columns="$("$(command -v tput)" cols)"
+
+    if [ "$__columns" -gt "$MAX_WIDTH" ]; then
+       __columns="$MAX_WIDTH"
+    fi
+
+    __col1="$((${#__count} + 1))"
+    __col3="$((${#__user} + 2))"
+    __col2="$((__columns - (__col3 +  __col1) - 4))"
+
     case "$__type" in
         episode)
-            printf "%s\:\n\t%s " "$__album" "$__track"
-            print_separator "$((4+${#__track}+${#__user}))"
+            __title="${__album}: ${__track}"
+
+            if [ "${#__title}" -gt "$__col2" ]; then
+                __title="$(truncate_string "$__title" "$__col2")"
+            fi
             ;;
           track)
-            printf "%s\:\n\t%s " "$__album" "$__track"
-            print_separator "$((4+${#__track}+${#__user}))"
+              __title="${__album}: ${__track}"
+
+              if [ "${#__title}" -gt "$__col2" ]; then
+                  __title="$(truncate_string "$__title" "$__col2")"
+              fi
             ;;
           movie)
-            printf "%s " "$__title"
-            print_separator "$((${#__count}+${#__title}+${#__user}))"
+              if [ "${#__title}" -gt "$__col2" ]; then
+                  __title="$(truncate_string "$__title" "$__col2")"
+              fi
             ;;
     esac
+    printf "%${__col1}s %-${__col2}s %${__col3}s\n" "$__count." "$__title" "$__user"
 
-    printf " %s\n" "$__user"
 }
 
 get_host() {
