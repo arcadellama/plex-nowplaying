@@ -27,21 +27,23 @@ PRGNAM="nowplaying.sh"
 VERSION="0.3"
 
 PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
-MAX_WIDTH=${MAX_WIDTH:-0}       # Set the maximum width of print; 0=infinite
-TERM_MARGIN=${TERM_MARGIN:-8}   # Set the margin for term
-DELIMITER="."
+MAX_WIDTH="${MAX_WIDTH:-0}"     # Set the maximum width of print; 0=infinite
+DOT_LEADER="${DOT_LEADER-"."}"  # Delimiter used for dot leader.
 
 ## Functions
 
 print_help() {
 cat <<EOF
+
 nowplaying.sh – a simple, POSIX-compliant script to print the "Now Playing"
                 status to stdout.
 
-    Usage: '"$PRGNAM" -s "<IP Address of Plex Server>'"
+    Usage: '"$PRGNAM" -swmd
 
                 -s  IP address(es) of Plex Server in quotes, separated
                     by spaces.
+                -w  Maximum number of columns width. Default=0, "infinite"
+                -d  Dot leader for display. Default = "."
 
 EOF
 }
@@ -64,7 +66,7 @@ print_delim() {
     __width="$2"
     __count=$((__width - __word))
     while [ "$__count" -gt 0 ]; do
-        printf "%s" "$DELIMITER"
+        printf "%s" "$DOT_LEADER"
         __count=$((__count - 1))
     done
 }
@@ -214,17 +216,30 @@ parse_plexml() {
 EOF
 }
 
+if [ "$#" -eq 0 ]; then
+    print_help
+    exit 0 
+fi
+
 while [ "$#" -gt 0 ]; do
     case "$1" in 
         -s)
             PLEX_HOST="$2"
             shift 2 ;;
+        -w)
+            MAX_WIDTH="$2"
+            shift 2 ;;
+        -d)
+            DOT_LEADER="$2"
+            shift 2 ;;
         -h)
+            print_help
+            exit 0 ;;
+        "")
             print_help
             exit 0 ;;
     esac
 done
-
 parse_plexml
 printf "\n"
 
