@@ -24,10 +24,10 @@
 # DEALINGS IN THE SOFTWARE.
 
 PRGNAM="nowplaying.sh"
-VERSION="0.2"
+VERSION="0.3"
 
 PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
-MAX_WIDTH=${MAX_WIDTH:-100}     # Set the maximum width of print
+MAX_WIDTH=${MAX_WIDTH:-0}       # Set the maximum width of print; 0=infinite
 TERM_MARGIN=${TERM_MARGIN:-8}   # Set the margin for term
 DELIMITER="."
 
@@ -78,7 +78,7 @@ print_nowplaying() {
     __type="$6"
     __columns="$("$(command -v tput)" cols)"
 
-    if [ "$__columns" -gt "$MAX_WIDTH" ]; then
+    if [ "$MAX_WIDTH" -ne 0 ] && [ "$__columns" -gt "$MAX_WIDTH" ]; then
        __columns="$MAX_WIDTH"
     fi
 
