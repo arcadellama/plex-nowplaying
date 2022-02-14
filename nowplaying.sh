@@ -24,7 +24,7 @@
 # DEALINGS IN THE SOFTWARE.
 
 PRGNAM="nowplaying.sh"
-PRG_VERSION="0.2"
+VERSION="0.2"
 
 PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
 MAX_WIDTH=${MAX_WIDTH:-100}     # Set the maximum width of print
