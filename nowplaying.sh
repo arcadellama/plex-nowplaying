@@ -148,16 +148,16 @@ print_nowplaying() {
     esac
 }
 
-get_host() {
-    set -- ${PLEX_HOST}
-    for __host in "$@"; do
-        if ping -c1 -t1 "$__host" >/dev/null ; then
-            printf "%s" "$__host"
-            return 0
-        fi
-    done 
-    exit 0
-}
+#get_host() {
+#    set -- ${PLEX_HOST}
+#    for __host in "$@"; do
+#        if ping -c1 -t1 "$__host" >/dev/null ; then
+#            printf "%s" "$__host"
+#            return 0
+#        fi
+#    done 
+#    exit 0
+#}
 
 get_element() {
     echo "${2}" | grep -Eo "${1}=\"[a-zA-Z0-9?!&()#:;.,-_ ]*\"" | \
@@ -165,7 +165,15 @@ get_element() {
 }
 
 get_plexml() {
-    curl -s http://"$(get_host)":32400/status/sessions
+    # curl -s http://"$(get_host)":32400/status/sessions
+    set -- ${PLEX_HOST}
+    for __host in "$@"; do
+        curl -m 2 -s http://"$__host":32400/status/sessions
+        if [ "$?" -eq 0 ]; then
+            return 0
+        fi
+    done
+    exit 0
 }
 
 parse_plexml() {
