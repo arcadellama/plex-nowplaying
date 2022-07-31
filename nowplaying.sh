@@ -38,12 +38,13 @@ cat <<EOF
 nowplaying.sh – a simple, POSIX-compliant script to print the "Now Playing"
                 status to stdout.
 
-    Usage: '"$PRGNAM" -swmd
+    Usage: '"$PRGNAM" -p {localhost 127.0.0.1} -w 80 
 
-                -s  IP address(es) of Plex Server in quotes, separated
-                    by spaces.
-                -w  Maximum number of columns width. Default=0, "infinite"
-                -d  Dot leader for display. Default = "."
+                -p  IP address(es) or domain name of Plex Server
+		    in quotes, separated by spaces.
+                -w  (optional) Maximum number of columns width.
+		    Default=0, "infinite"
+                -d  (optional) Dot leader for display. Default = "."
 
 EOF
 }
@@ -231,7 +232,7 @@ fi
 
 while [ "$#" -gt 0 ]; do
     case "$1" in 
-        -s)
+        -p)
             PLEX_HOST="$2"
             shift 2 ;;
         -w)
