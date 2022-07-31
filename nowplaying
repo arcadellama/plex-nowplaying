@@ -35,16 +35,17 @@ DOT_LEADER="${DOT_LEADER-"."}"  # Delimiter used for dot leader.
 print_help() {
 cat <<EOF
 
-nowplaying.sh – a simple, POSIX-compliant script to print the "Now Playing"
-                status to stdout.
+$PRGNAM, version $VERSION
+a simple, POSIX-compliant script to print the "Now Playing" status
+of a Plex server to stdout.
 
-    Usage: '"$PRGNAM" -p {localhost 127.0.0.1} -w 80 
+    Usage: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
 
-                -p  IP address(es) or domain name of Plex Server
-		    in quotes, separated by spaces.
-                -w  (optional) Maximum number of columns width.
-		    Default=0, "infinite"
-                -d  (optional) Dot leader for display. Default = "."
+         --plex, -p   IP address(es) or domain name of Plex Server
+                      separated by commas, no spaces. (Required)
+        --width, -w   Maximum number of columns width.
+                      Default=0, "infinite"
+        --delim, -d   Dot leader for display. Default = "."
 
 EOF
 }
@@ -149,28 +150,20 @@ print_nowplaying() {
     esac
 }
 
-#get_host() {
-#    set -- ${PLEX_HOST}
-#    for __host in "$@"; do
-#        if ping -c1 -t1 "$__host" >/dev/null ; then
-#            printf "%s" "$__host"
-#            return 0
-#        fi
-#    done 
-#    exit 0
-#}
-
 get_element() {
     echo "${2}" | grep -Eo "${1}=\"[a-zA-Z0-9?!&()#:;.,-_ ]*\"" | \
         cut -d '=' -f 2 | tr -d '"' | sed -e "s/\&\#39\;/'/g"
 }
 
 get_plexml() {
-    # curl -s http://"$(get_host)":32400/status/sessions
+    oldIFS="$IFS"
+    IFS=,
     set -- ${PLEX_HOST}
     for __host in "$@"; do
+        echo "$__host" #debug
         curl -m 2 -s http://"$__host":32400/status/sessions
         if [ "$?" -eq 0 ]; then
+            IFS="$oldIFS"
             return 0
         fi
     done
@@ -225,32 +218,36 @@ parse_plexml() {
 EOF
 }
 
-if [ "$#" -eq 0 ]; then
-    print_help
-    exit 0 
-fi
+main() {
+    if [ "$#" -eq 0 ]; then
+        print_help
+        exit 0 
+    fi
 
-while [ "$#" -gt 0 ]; do
-    case "$1" in 
-        -p)
-            PLEX_HOST="$2"
-            shift 2 ;;
-        -w)
-            MAX_WIDTH="$2"
-            shift 2 ;;
-        -d)
-            DOT_LEADER="$2"
-            shift 2 ;;
-        -h)
-            print_help
-            exit 0 ;;
-        *)
-	    printf "ERROR: \"%s\" is not a valid expression.\n" "$1"
-	    printf "Try \"%s\" --help for help.\n" "$PRGNAM"
-            exit 1 ;;
-    esac
-done
-parse_plexml
-printf "\n"
+    while [ "$#" -gt 0 ]; do
+        case "$1" in 
+             --plex|-p)
+                PLEX_HOST="$2"
+                shift 2 ;;
+            --width|-w)
+                MAX_WIDTH="$2"
+                shift 2 ;;
+            --delim|-d)
+                DOT_LEADER="$2"
+                shift 2 ;;
+             --help|-h)
+                print_help
+                exit 0 ;;
+                     *)
+	            printf "ERROR: \"%s\" is not a valid expression.\n" "$1"
+	            printf "Try \"%s\" --help for help.\n" "$PRGNAM"
+                exit 1 ;;
+        esac
+    done
+    parse_plexml
+    printf "\n"
 
-exit 0
+    exit 0
+}
+
+main "$@"
