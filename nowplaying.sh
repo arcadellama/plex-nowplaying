@@ -244,9 +244,10 @@ while [ "$#" -gt 0 ]; do
         -h)
             print_help
             exit 0 ;;
-        "")
-            print_help
-            exit 0 ;;
+        *)
+	    printf "ERROR: \"%s\" is not a valid expression.\n" "$1"
+	    printf "Try \"%s\" --help for help.\n" "$PRGNAM"
+            exit 1 ;;
     esac
 done
 parse_plexml
