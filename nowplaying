@@ -24,11 +24,13 @@
 # DEALINGS IN THE SOFTWARE.
 
 PRGNAM="nowplaying.sh"
-VERSION="0.3"
+VERSION="0.9"
 
 PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
 MAX_WIDTH="${MAX_WIDTH:-0}"     # Set the maximum width of print; 0=infinite
-DOT_LEADER="${DOT_LEADER-"."}"  # Delimiter used for dot leader.
+DOT_LEADER="${DOT_LEADER:-"."}" # Delimiter used for dot leader.
+DL_AGENT="${DL_AGENT:-}"        # Either curl or wget
+SKIP_CHECKS="${SKIP_CHECKS:-}"  # Skip dependency checks
 
 ## Functions
 
@@ -46,9 +48,38 @@ of a Plex server to stdout.
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
         --delim, -d   Dot leader for display. Default = "."
+       
+        --force, -f   Skip dependency checks.
 
 EOF
 }
+
+dependency_check() {
+    if [ ! -z "$DL_AGENT" ]; then
+        true
+    elif [ -x "$(command -v curl)" ]; then
+        DL_AGENT="$(command -v curl)"
+    elif [ ! -x "$(command -v wget)" ]; then
+        DL_AGENT="$(command -v wget)"
+    else
+        printf "Error: neither curl nor wget found.\n"
+        exit 1
+    fi
+
+    if [ -z "$SKIP_CHECKS" ]; then
+        return 0
+    fi
+
+    # Let's make sure everything is here
+    for __coreutil in tput grep cut sed; do
+        if [ ! "$(command -v $__coreutil)" ]; then
+            printf "Error: \"%s\" not found.\n" "$__coreutil"
+            exit 1
+        fi
+    done
+
+}
+
 
 truncate_string() {
     __string="$1"
@@ -160,14 +191,22 @@ get_plexml() {
     IFS=,
     set -- ${PLEX_HOST}
     for __host in "$@"; do
-        echo "$__host" #debug
-        curl -m 2 -s http://"$__host":32400/status/sessions
-        if [ "$?" -eq 0 ]; then
-            IFS="$oldIFS"
-            return 0
-        fi
+        case "$DL_AGENT" in
+         *curl)
+            "$DL_AGENT" -m 2 -s http://"$__host":32400/status/sessions
+            if [ "$?" -eq 0 ]; then
+                return "$?" 
+            fi
+            ;;
+         *wget)
+            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
+            if [ "$?" -eq 0 ]; then
+                return "$?" 
+            fi
+            ;;
+        esac
     done
-    exit 0
+    exit
 }
 
 parse_plexml() {
@@ -235,6 +274,9 @@ main() {
             --delim|-d)
                 DOT_LEADER="$2"
                 shift 2 ;;
+            --force|-f)
+                SKIP_CHECKS=1
+                shift 1 ;;
              --help|-h)
                 print_help
                 exit 0 ;;
@@ -244,10 +286,12 @@ main() {
                 exit 1 ;;
         esac
     done
-    parse_plexml
-    printf "\n"
 
-    exit 0
+    if dependency_check; then
+        if parse_plexml; then
+            printf "\n"
+        fi
+    fi
 }
 
 main "$@"
