@@ -125,6 +125,7 @@ print_nowplaying() {
 
     case "$__type" in
         episode)
+              # TV Episodes 
               __title="${__album}: ${__track}"
 
               if [ "${#__title}" -gt "$__col2" ]; then
@@ -149,6 +150,7 @@ print_nowplaying() {
             ;;
 
           track)
+              # Music tracks
               __title="${__album}: ${__track}"
 
               if [ "${#__title}" -gt "$__col2" ]; then
@@ -174,6 +176,7 @@ print_nowplaying() {
             ;;
 
           movie)
+              # Movies
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
