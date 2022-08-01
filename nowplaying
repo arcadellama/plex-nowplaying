@@ -26,11 +26,11 @@
 PRGNAM="nowplaying.sh"
 VERSION="0.9"
 
-PLEX_HOST="${PLEX_HOST:-}"      # Plex server IP(s), separated by space
-MAX_WIDTH="${MAX_WIDTH:-0}"     # Set the maximum width of print; 0=infinite
-DOT_LEADER="${DOT_LEADER:-"."}" # Delimiter used for dot leader.
-DL_AGENT="${DL_AGENT:-}"        # Either curl or wget
-SKIP_CHECKS="${SKIP_CHECKS:-}"  # Skip dependency checks
+plex_host="${plex_host:-}"      # Plex server IP(s), separated by space
+max_width="${max_width:-0}"     # Set the maximum width of print; 0=infinite
+dot_leader="${dot_leader:-"."}" # Delimiter used for dot leader.
+dl_agent="${dl_agent:-}"        # Either curl or wget
+skip_checks="${skip_checks:-}"  # Skip dependency checks
 
 ## Functions
 
@@ -63,20 +63,20 @@ EOF
 }
 
 dependency_check() {
-    if [ ! -z "$DL_AGENT" ]; then
-        DL_AGENT="$DL_AGENT"
+    if [ ! -z "$dl_agent" ]; then
+        dl_agent="$dl_agent"
     elif [ -x "$(command -v curl)" ]; then
-        DL_AGENT="$(command -v curl)"
+        dl_agent="$(command -v curl)"
     elif [ ! -x "$(command -v wget)" ]; then
-        DL_AGENT="$(command -v wget)"
+        dl_agent="$(command -v wget)"
     elif [ ! -x "$(command -v fetch)" ]; then
-        DL_AGENT="$(command -v fetch)"
+        dl_agent="$(command -v fetch)"
     else
         printf "Error: neither curl nor wget found.\n"
         exit 1
     fi
 
-    if [ -z "$SKIP_CHECKS" ]; then
+    if [ -z "$skip_checks" ]; then
         return 0
     fi
 
@@ -109,7 +109,7 @@ print_delim() {
     __width="$2"
     __count=$((__width - __word))
     while [ "$__count" -gt 0 ]; do
-        printf "%s" "$DOT_LEADER"
+        printf "%s" "$dot_leader"
         __count=$((__count - 1))
     done
 }
@@ -123,8 +123,8 @@ print_nowplaying() {
     __type="$6"
     __columns="$("$(command -v tput)" cols)"
 
-    if [ "$MAX_WIDTH" -ne 0 ] && [ "$__columns" -gt "$MAX_WIDTH" ]; then
-       __columns="$MAX_WIDTH"
+    if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
+       __columns="$max_width"
     fi
 
     __col1="$((${#__count} + 1))"
@@ -210,17 +210,17 @@ get_element() {
 
 get_json() {
     __host="$1"
-    case "$DL_AGENT" in
+    case "$dl_agent" in
         *curl)
-            "$DL_AGENT" -m 2 -s http://"$__host":32400/status/sessions
+            "$dl_agent" -m 2 -s http://"$__host":32400/status/sessions
             return "$?" 
             ;;
          *wget)
-            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
+            "$dl_agent" -T 2 -qO - http://"$__host":32400/status/sessions
             return "$?" 
             ;;
          *fetch)
-            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
+            "$dl_agent" -T 2 -qO - http://"$__host":32400/status/sessions
             return "$?" 
             ;;
         esac
@@ -229,7 +229,7 @@ get_json() {
 get_plexml() {
     oldIFS="$IFS"
     IFS=,
-    set -- ${PLEX_HOST}
+    set -- ${plex_host}
     for __host in "$@"; do
         if get_json "$__host"; then
             return "$?"
@@ -295,25 +295,25 @@ main() {
     while [ "$#" -gt 0 ]; do
         case "$1" in 
              --plex|-p)
-                PLEX_HOST="$2"
+                plex_host="$2"
                 shift 2 ;;
             --width|-w)
-                MAX_WIDTH="$2"
+                max_width="$2"
                 shift 2 ;;
             --delim|-d)
-                DOT_LEADER="$2"
+                dot_leader="$2"
                 shift 2 ;;
             --force|-f)
-                SKIP_CHECKS=1
+                skip_checks=1
                 shift 1 ;;
             --curl)
-                DL_AGENT="$(command -v curl)"
+                dl_agent="$(command -v curl)"
                 shift 1 ;;
             --wget)
-                DL_AGENT="$(command -v wget)"
+                dl_agent="$(command -v wget)"
                 shift 1 ;;
            --fetch)
-                DL_AGENT="$(command -v fetch)"
+                dl_agent="$(command -v fetch)"
                 shift 1 ;;
              --help|-h)
                 print_help
