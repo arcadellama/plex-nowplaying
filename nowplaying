@@ -41,22 +41,30 @@ $PRGNAM, version $VERSION
 a simple, POSIX-compliant script to print the "Now Playing" status
 of a Plex server to stdout.
 
-    Usage: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
+Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
 
-         --plex, -p   IP address(es) or domain name of Plex Server
-                      separated by commas, no spaces. (Required)
+        REQUIRED PARAMATERS:
+            
+        --plex, -p    IP address(es) or domain name of Plex Server
+                      separated by commas, no spaces.
+
+        OPTIONAL PARAMATERS:
+
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
         --delim, -d   Dot leader for display. Default = "."
        
         --force, -f   Skip dependency checks.
 
+        --curl        Force wget as downloader.
+        --wget        Force curl as downloader.
+        --fetch       Force fetch as downloader.
 EOF
 }
 
 dependency_check() {
     if [ ! -z "$DL_AGENT" ]; then
-        true
+        DL_AGENT="$DL_AGENT"
     elif [ -x "$(command -v curl)" ]; then
         DL_AGENT="$(command -v curl)"
     elif [ ! -x "$(command -v wget)" ]; then
@@ -128,6 +136,7 @@ print_nowplaying() {
               # TV Episodes 
               __title="${__album}: ${__track}"
 
+              # If it doesn't fit, spread over two lines
               if [ "${#__title}" -gt "$__col2" ]; then
 
                   if [ "${#__album}" -gt "$__col2" ]; then
@@ -138,12 +147,15 @@ print_nowplaying() {
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
 
+                  # Line 1
                   printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "$__count." "$__album" ""
+                  # Line 2
                   printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
                 else
 
+                # Otherwise everything on one line
               printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                   "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
               fi
@@ -153,6 +165,7 @@ print_nowplaying() {
               # Music tracks
               __title="${__album}: ${__track}"
 
+              # If it doesn't fit, spread over two lines
               if [ "${#__title}" -gt "$__col2" ]; then
 
                   if [ "${#__album}" -gt "$__col2" ]; then
@@ -163,12 +176,15 @@ print_nowplaying() {
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
 
+                  # Line 1
                   printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "$__count." "$__album" ""
+                  # Line 2
                   printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
                 else
 
+                    # All on one line
               printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                   "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
 
@@ -177,6 +193,7 @@ print_nowplaying() {
 
           movie)
               # Movies
+              # Simpler, always on one line, truncated if needed
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
@@ -191,30 +208,32 @@ get_element() {
         cut -d '=' -f 2 | tr -d '"' | sed -e "s/\&\#39\;/'/g"
 }
 
+get_json() {
+    __host="$1"
+    case "$DL_AGENT" in
+        *curl)
+            "$DL_AGENT" -m 2 -s http://"$__host":32400/status/sessions
+            return "$?" 
+            ;;
+         *wget)
+            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
+            return "$?" 
+            ;;
+         *fetch)
+            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
+            return "$?" 
+            ;;
+        esac
+}
+
 get_plexml() {
     oldIFS="$IFS"
     IFS=,
     set -- ${PLEX_HOST}
     for __host in "$@"; do
-        case "$DL_AGENT" in
-         *curl)
-            "$DL_AGENT" -m 2 -s http://"$__host":32400/status/sessions
-            if [ "$?" -eq 0 ]; then
-                return "$?" 
-            fi
-            ;;
-         *wget)
-            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
-            if [ "$?" -eq 0 ]; then
-                return "$?" 
-            fi
-         *fetch)
-            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
-            if [ "$?" -eq 0 ]; then
-                return "$?" 
-            fi
-            ;;
-        esac
+        if get_json "$__host"; then
+            return "$?"
+        fi
     done
     exit
 }
@@ -286,6 +305,15 @@ main() {
                 shift 2 ;;
             --force|-f)
                 SKIP_CHECKS=1
+                shift 1 ;;
+            --curl)
+                DL_AGENT="$(command -v curl)"
+                shift 1 ;;
+            --wget)
+                DL_AGENT="$(command -v wget)"
+                shift 1 ;;
+           --fetch)
+                DL_AGENT="$(command -v fetch)"
                 shift 1 ;;
              --help|-h)
                 print_help
