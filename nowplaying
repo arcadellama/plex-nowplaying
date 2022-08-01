@@ -61,6 +61,8 @@ dependency_check() {
         DL_AGENT="$(command -v curl)"
     elif [ ! -x "$(command -v wget)" ]; then
         DL_AGENT="$(command -v wget)"
+    elif [ ! -x "$(command -v fetch)" ]; then
+        DL_AGENT="$(command -v fetch)"
     else
         printf "Error: neither curl nor wget found.\n"
         exit 1
@@ -199,6 +201,11 @@ get_plexml() {
             fi
             ;;
          *wget)
+            "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
+            if [ "$?" -eq 0 ]; then
+                return "$?" 
+            fi
+         *fetch)
             "$DL_AGENT" -T 2 -qO - http://"$__host":32400/status/sessions
             if [ "$?" -eq 0 ]; then
                 return "$?" 
