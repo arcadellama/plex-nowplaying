@@ -23,8 +23,9 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
-PRGNAM="nowplaying.sh"
-VERSION="0.9"
+## Global Variables
+prgnam="nowplaying.sh"
+version="0.91"
 
 plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
@@ -33,16 +34,31 @@ dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 
-## Functions
+## Text Color Definitions
+reset="\033[m"
+bold="\033[1m"
+italic="\033[3m"
+underline="\033[4m"
 
+black="\033[30m"
+blue="\033[34m"
+cyan="\033[36m"
+grey="\033[30;1m"
+green="\033[32m"
+magenta="\033[35m"
+red="\033[31m"
+white="\033[37m"
+yellow="\033[33m"
+
+## Functions
 print_help() {
 cat <<EOF
 
-$PRGNAM, version $VERSION
+$prgnam, version $version
 a simple, POSIX-compliant script to print the "Now Playing" status
 of a Plex server to stdout.
 
-Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
+Example: '"$prgnam" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
 
         REQUIRED PARAMATERS:
             
@@ -152,16 +168,16 @@ print_nowplaying() {
                   fi
 
                   # Line 1
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." "$__album" ""
+                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$bold$green" "$__count." "$__album" ""
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
+                  printf "%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user" "$reset"
                 else
 
                 # Otherwise everything on one line
-              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
+              printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+                  "$bold$green" "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" "$reset"
               fi
             ;;
 
@@ -181,16 +197,16 @@ print_nowplaying() {
                   fi
 
                   # Line 1
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." "$__album" ""
+                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$bold$yellow" "$__count." "$__album" ""
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
+                  printf "%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user" "$reset"
                 else
 
                     # All on one line
-              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
+              printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+                  "$bold$yellow" "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" "$reset"
 
               fi
             ;;
@@ -201,8 +217,8 @@ print_nowplaying() {
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
-              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
+              printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+                  "$bold$blue" "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" "$reset"
             ;;
     esac
 }
@@ -277,10 +293,10 @@ parse_plexml() {
               continue ;;
         esac
 
-        if echo "$line" | grep -q 'User id'; then
+        if printf "%s\n" "$line" | grep -q 'User id'; then
             __user="$(get_element "title" "$line")"
             if [ "$__count" -eq 0 ]; then
-                printf "Now Playing on Plex:\n"
+                printf "%bNow Playing on Plex:%b\n" "$bold$italic" "$reset"
                 __count="$((__count+1))"
             fi
             print_nowplaying "$__count" "$__album" "$__track" \
@@ -328,7 +344,7 @@ main() {
                 exit 0 ;;
                      *)
 	            printf "ERROR: \"%s\" is not a valid expression.\n" "$1"
-	            printf "Try \"%s\" --help for help.\n" "$PRGNAM"
+	            printf "Try \"%s\" --help for help.\n" "$prgnam"
                 exit 1 ;;
         esac
     done
