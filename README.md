@@ -1,6 +1,7 @@
 # nowplaying.sh
-a simple, POSIX-compliant script to print the "Now Playing" status
-of a Plex server to stdout.
+## a simple, POSIX-compliant script to print the "Now Playing" status of a Plex server to stdout.
+
+![Image](/images/screenshot.png)
 
 Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
 
@@ -19,5 +20,6 @@ Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "."
         --curl        Force curl as downloader.
         --wget        Force wget as downloader.
         --fetch       Force fetch as downloader.
+
 
 
