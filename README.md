@@ -51,3 +51,4 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 - [x] Remove BASHisms and make it pure sh/posix compatible
 - [ ] Reduce the dependancy on grep and sed
 - [ ] Add colors, bold, italics, etc.
+- [ ] Create a MAKEFILE for installation
