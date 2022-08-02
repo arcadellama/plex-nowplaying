@@ -1,1 +1,2 @@
-A simple, POSIX-compliant shell script to show the "Now Playing" status of a Plex Server.
+# nowplaying.sh
+## A simple, POSIX-compliant shell script to show the "Now Playing" status of a Plex Server.

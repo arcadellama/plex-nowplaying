@@ -56,15 +56,15 @@ Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "."
        
         --force, -f   Skip dependency checks.
 
-        --curl        Force wget as downloader.
-        --wget        Force curl as downloader.
+        --curl        Force curl as downloader.
+        --wget        Force wget as downloader.
         --fetch       Force fetch as downloader.
 EOF
 }
 
 dependency_check() {
-    if [ ! -z "$dl_agent" ]; then
-        dl_agent="$dl_agent"
+    if [ -n "$dl_agent" ]; then
+        true
     elif [ -x "$(command -v curl)" ]; then
         dl_agent="$(command -v curl)"
     elif [ ! -x "$(command -v wget)" ]; then
@@ -89,7 +89,6 @@ dependency_check() {
     done
 
 }
-
 
 truncate_string() {
     __string="$1"
@@ -204,11 +203,11 @@ print_nowplaying() {
 }
 
 get_element() {
-    echo "${2}" | grep -Eo "${1}=\"[a-zA-Z0-9?!&()#:;.,-_ ]*\"" | \
+    printf "%s\n" "${2}" | grep -Eo "${1}=\"[a-zA-Z0-9?!&()#:;.,-_ ]*\"" | \
         cut -d '=' -f 2 | tr -d '"' | sed -e "s/\&\#39\;/'/g"
 }
 
-get_json() {
+download_session() {
     __host="$1"
     case "$dl_agent" in
         *curl)
@@ -227,14 +226,16 @@ get_json() {
 }
 
 get_plexml() {
-    oldIFS="$IFS"
+    oldIFS=$IFS
     IFS=,
+    # shellcheck disable=2086
     set -- ${plex_host}
     for __host in "$@"; do
-        if get_json "$__host"; then
+        if download_session "$__host"; then
             return "$?"
         fi
     done
+    IFS=$oldIFS
     exit
 }
 
@@ -315,7 +316,7 @@ main() {
            --fetch)
                 dl_agent="$(command -v fetch)"
                 shift 1 ;;
-             --help|-h)
+         --help|-h)
                 print_help
                 exit 0 ;;
                      *)
