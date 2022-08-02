@@ -31,6 +31,7 @@ max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader.
 dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
+plex_file=""                    # Optional XML for testing
 
 ## Functions
 
@@ -59,6 +60,9 @@ Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "."
         --curl        Force curl as downloader.
         --wget        Force wget as downloader.
         --fetch       Force fetch as downloader.
+
+        --file        Point to a local XML file for debugging
+
 EOF
 }
 
@@ -226,6 +230,10 @@ download_session() {
 }
 
 get_plexml() {
+    if [ -n "$plex_file" ]; then
+        cat "$plex_file"
+        return
+    fi
     oldIFS=$IFS
     IFS=,
     # shellcheck disable=2086
@@ -236,7 +244,6 @@ get_plexml() {
         fi
     done
     IFS=$oldIFS
-    exit 1
 }
 
 parse_plexml() {
@@ -278,14 +285,14 @@ parse_plexml() {
             print_nowplaying "$__count" "$__album" "$__track" \
                 "$__title" "$__user" "$__type"
             __count="$((__count+1))"
-
             continue
-        else
-            return 2
         fi
     done << EOF
     "$(get_plexml)"
 EOF
+if [ $__count -eq 0 ]; then
+    return 2
+fi
 }
 
 main() {
@@ -303,6 +310,9 @@ main() {
             --force|-f)
                 skip_checks=1
                 shift 1 ;;
+            --file)
+                plex_file="$2"
+                shift 2 ;;
             --curl)
                 dl_agent="$(command -v curl)"
                 shift 1 ;;
@@ -323,9 +333,7 @@ main() {
     done
 
     if dependency_check; then
-        if parse_plexml; then
-            printf "\n"
-        fi
+        parse_plexml
     fi
 }
 
