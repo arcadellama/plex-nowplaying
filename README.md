@@ -3,7 +3,7 @@
 
 ![Image](/images/screenshot.png)
 
-Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
+    Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
 
         --plex, -p    IP address(es) or domain name of Plex Server
                       separated by commas, no spaces.
