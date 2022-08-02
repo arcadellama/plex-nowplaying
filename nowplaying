@@ -26,11 +26,11 @@
 PRGNAM="nowplaying.sh"
 VERSION="0.9"
 
-plex_host="${plex_host:-}"      # Plex server IP(s), separated by space
-max_width="${max_width:-0}"     # Set the maximum width of print; 0=infinite
-dot_leader="${dot_leader:-"."}" # Delimiter used for dot leader.
-dl_agent="${dl_agent:-}"        # Either curl or wget
-skip_checks="${skip_checks:-}"  # Skip dependency checks
+plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
+max_width="0"                   # Set the maximum width of print; 0=infinite
+dot_leader="."                  # Delimiter used for dot leader.
+dl_agent=""                     # Either curl, wget, or fetch
+skip_checks=""                  # Skip dependency checks
 
 ## Functions
 
@@ -236,7 +236,7 @@ get_plexml() {
         fi
     done
     IFS=$oldIFS
-    exit
+    exit 1
 }
 
 parse_plexml() {
@@ -280,19 +280,15 @@ parse_plexml() {
             __count="$((__count+1))"
 
             continue
+        else
+            return 2
         fi
-
     done << EOF
     "$(get_plexml)"
 EOF
 }
 
 main() {
-    if [ "$#" -eq 0 ]; then
-        print_help
-        exit 0 
-    fi
-
     while [ "$#" -gt 0 ]; do
         case "$1" in 
              --plex|-p)
