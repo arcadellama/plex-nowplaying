@@ -8,23 +8,23 @@ This started out as a quick way to make sure I didn't kick anyone off the Plex s
 
 ### Features
 - Fully POSIX-compliant out of the box
-- Tested on Debian, Ubuntu, Fedora, Slackware, and FreeBSD
+- Tested on macOS, Debian, Ubuntu, Fedora, Slackware, and FreeBSD
 - No PlexPass or API credentials needed.
 
 ### Dependencies
 - Just about any shell (sh, bash, zsh, fish, tcsh...)
-- cuRl, wget, or fetch (looks in that order)
+- curl, wget, or fetch (looks in that order)
 - Standard coreutils: sed, grep, command, tput
 
 ### Installation
-Simply copy it into your path. Without any arguments it looks for a Plex server running on your local server.
+Simply clone and copy the script it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
 See "Usage" below for more options.
 
 I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
-### Usage
+### Configuration
 
-    Example: '"$PRGNAM" -p localhost,127.0.0.1,192.168.1.1 -w 80 -d "." 
+    Example: nowplaying -p localhost,192.168.1.1 -w 80 -d "." 
 
         --plex, -p    IP address(es) or domain name of Plex Server
                       separated by commas, no spaces.
