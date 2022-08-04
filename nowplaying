@@ -93,7 +93,7 @@ dependency_check() {
     elif [ -x "$(command -v fetch)" ]; then
         dl_agent="$(command -v fetch)"
     else
-        printf "Error: neither curl nor wget found.\n"
+        printf "Error: curl, wget, or fetch not found.\n"
         exit 1
     fi
 
