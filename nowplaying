@@ -64,15 +64,11 @@ $prgnam, version $version
 a simple, POSIX-compliant script to print the "Now Playing" status
 of a Plex server to stdout.
 
-Example: '"$prgnam" -p localhost,192.168.1.1 -w 80 -d "." 
-
-        REQUIRED PARAMATERS:
-            
+Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
+         
         --plex, -p    IP address(es) or domain name of Plex Server
                       separated by commas, no spaces.
                       Default=localhost,127.0.0.1
-
-        OPTIONAL PARAMATERS:
 
         --token, -t   Plex Auth Token
 
