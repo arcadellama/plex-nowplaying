@@ -52,7 +52,7 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 ### Roadmap
 - [x] Add PLEX AUTH TOKEN option for servers without local auth turned off
 - [x] Remove BASHisms and make it pure sh/posix compatible
-- [ ] Add transcoding indicator
+- [x] Add transcoding indicator
 - [ ] Reduce the dependancy on grep and sed
 - [ ] Add colors, bold, italics, etc.
 - [ ] Create a MAKEFILE for installation

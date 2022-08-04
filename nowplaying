@@ -25,7 +25,7 @@
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="0.95"
+version="0.96"
 
 plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
