@@ -39,7 +39,7 @@ plex_token=""                   # Auth token for Plex
 ## Text Color Definitions
 # Someday
 # black="\033[30m"
-# blue="\033[34m"
+blue="\033[34m"
 # cyan="\033[36m"
 # grey="\033[30;1m"
 green="\033[32m"
