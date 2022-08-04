@@ -171,16 +171,16 @@ print_nowplaying() {
 
     # Embed transcode status into user name
     # perhaps in the future the color can change or something
-    if [ -n "$__transcode" ]; then
-        __user="${__user} $(print_escape_seq "${__transcode}")"
-    fi
+    #if [ -n "$__transcode" ]; then
+    #    __user="${__user} $(print_escape_seq "${__transcode}")"
+    #fi
     
     if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
        __columns="$max_width"
     fi
 
     __col1="$((${#__count} + 1))"
-    __col3="$((${#__user} + 1))"
+    __col3="$((${#__user} + 3))"
     __col2="$((__columns - (__col3 +  __col1) - 4))"
 
 
@@ -244,10 +244,10 @@ print_nowplaying() {
                 else
 
                     # All on one line
-              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b %b\n" \
                   "$bold" "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user" "$treset"
+                  "$bold" "$__user" "$treset" "$__transcode"
 
               fi
             ;;
@@ -258,10 +258,10 @@ print_nowplaying() {
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
-              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b %b\n" \
                   "$bold" "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user" "$treset"
+                  "$bold" "$__user" "$treset" "$__transcode"
             ;;
     esac
 }
