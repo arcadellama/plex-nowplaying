@@ -162,8 +162,15 @@ print_nowplaying() {
     __title="$4"
     __user="$5"
     __type="$6"
+    __transcode="$7"
     __columns="$("$(command -v tput)" cols)"
 
+    # Embed transcode status into user name
+    # perhaps in the future the color can change or something
+    if [ -n "$__transcode" ]; then
+        __user="${__user}${__transcode}"
+    fi
+    
     if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
        __columns="$max_width"
     fi
@@ -171,6 +178,7 @@ print_nowplaying() {
     __col1="$((${#__count} + 1))"
     __col3="$((${#__user} + 1))"
     __col2="$((__columns - (__col3 +  __col1) - 4))"
+
 
     case "$__type" in
         episode)
@@ -312,8 +320,7 @@ parse_plexml() {
     __album=""
     __track=""
     __type=""
-    #__series=""
-    #__episode=""
+    __transcode=""
 
     __count=0
     while IFS= read -r line; do
@@ -322,13 +329,11 @@ parse_plexml() {
                   __type="episode"
                   __album="$(get_element "grandparentTitle" "$line")"
                   __track="$(get_element "title" "$line")"
-                  #__title="$(printf "%s:\n\t%s" "${__album}" "${__track}")"
                   continue ;;
           track)
               __type="track"
               __album="$(get_element "grandparentTitle" "$line")"
               __track="$(get_element "title" "$line")"
-              #__title="$(printf "%s:\n\t%s" "${__album}" "${__track}")"
               continue ;;
           movie)
               __type="movie"
@@ -336,17 +341,30 @@ parse_plexml() {
               continue ;;
         esac
 
-        if printf "%s\n" "$line" | grep -q 'User id'; then
-            __user="$(get_element "title" "$line")"
-            if [ "$__count" -eq 0 ]; then
-                printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
-                __count="$((__count+1))"
-            fi
-            print_nowplaying "$__count" "$__album" "$__track" \
-                "$__title" "$__user" "$__type"
-            __count="$((__count+1))"
-            continue
-        fi
+        case "$line" in
+            *User\ id*)
+                __user="$(get_element "title" "$line")"
+                continue ;;
+
+    *TranscodeSession*)
+                if [ "$(get_element "transcodeHwRequested" "$line")" = 1 ]
+                then
+                    __transcode="(hw)"
+                else
+                    __transcode="(t)"
+                fi
+                continue ;;
+
+      */Video*|*/Track*)
+                if [ "$__count" -eq 0 ]; then
+                    printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
+                    __count="$((__count+1))"
+                fi
+                print_nowplaying "$__count" "$__album" "$__track" \
+                    "$__title" "$__user" "$__type" "$__transcode"
+                    __count="$((__count+1))"
+                continue ;;
+        esac
     done << EOF
     "$(get_plexml)"
 EOF
