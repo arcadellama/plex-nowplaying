@@ -49,11 +49,11 @@ plex_file=""                    # Optional XML for testing
 # 
 # ## Text Effect Definitions
 # regular=""
-# bold="\033[1m"
+bold="\033[1m"
 # italic="\033[3m"
 # underline="\033[4m"
 # 
-# treset="\033[m"
+treset="\033[m"
 
 ## Functions
 print_help() {
@@ -143,7 +143,7 @@ print_delim() {
     __width="$2"
     __count=$((__width - __word))
     while [ "$__count" -gt 0 ]; do
-        printf "%s" "$dot_leader"
+        printf "%b%s" "$treset" "$dot_leader"
         __count=$((__count - 1))
     done
 }
@@ -182,16 +182,20 @@ print_nowplaying() {
                   fi
 
                   # Line 1
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." "$__album" ""
+                  printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+                      "$bold" "$__count." "$__album" "" "$treset"
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
+                  printf "%${__col1}s %b%-${__col2}s%b%${__col3}s%b\n" \
+                      "" "$bold" "$__track \
+                      $(print_delim ${#__track} ${__col2})" \
+                      "$bold" "$__user" "$treset"
                 else
 
                 # Otherwise everything on one line
-              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
+              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                  "$bold" "$__count." \
+                  "$__title $(print_delim ${#__title} ${__col2})" \
+                  "$bold" "$__user" "$treset"
               fi
             ;;
 
@@ -211,16 +215,20 @@ print_nowplaying() {
                   fi
 
                   # Line 1
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." "$__album" ""
+                  printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+                      "$bold" "$__count." "$__album" "" "$treset"
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
+                  printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                      "$bold" "" "$__track \
+                      $(print_delim ${#__track} ${__col2})" \
+                      "$bold" "$__user" "$treset"
                 else
 
                     # All on one line
-              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
+              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                  "$bold" "$__count." \
+                  "$__title $(print_delim ${#__title} ${__col2})" \
+                  "$bold" "$__user" "$treset"
 
               fi
             ;;
@@ -231,8 +239,10 @@ print_nowplaying() {
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
-              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" 
+              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                  "$bold" "$__count." \
+                  "$__title $(print_delim ${#__title} ${__col2})" \
+                  "$bold" "$__user" "$treset"
             ;;
     esac
 }
@@ -310,7 +320,7 @@ parse_plexml() {
         if printf "%s\n" "$line" | grep -q 'User id'; then
             __user="$(get_element "title" "$line")"
             if [ "$__count" -eq 0 ]; then
-                printf "Now Playing on Plex:\n"
+                printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
                 __count="$((__count+1))"
             fi
             print_nowplaying "$__count" "$__album" "$__track" \
