@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # nowplaying.sh – A simple, POSIX-compliant shell script to print the
 # "Now Playing" status of a local Plex Server to stdout.
