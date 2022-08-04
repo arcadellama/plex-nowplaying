@@ -88,9 +88,9 @@ dependency_check() {
         true
     elif [ -x "$(command -v curl)" ]; then
         dl_agent="$(command -v curl)"
-    elif [ ! -x "$(command -v wget)" ]; then
+    elif [ -x "$(command -v wget)" ]; then
         dl_agent="$(command -v wget)"
-    elif [ ! -x "$(command -v fetch)" ]; then
+    elif [ -x "$(command -v fetch)" ]; then
         dl_agent="$(command -v fetch)"
     else
         printf "Error: neither curl nor wget found.\n"
