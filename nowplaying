@@ -33,22 +33,27 @@ dot_leader="."                  # Delimiter used for dot leader.
 dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
+# color=auto
 
 ## Text Color Definitions
-reset="\033[m"
-bold="\033[1m"
-italic="\033[3m"
-underline="\033[4m"
-
-black="\033[30m"
-blue="\033[34m"
-cyan="\033[36m"
-grey="\033[30;1m"
-green="\033[32m"
-magenta="\033[35m"
-red="\033[31m"
-white="\033[37m"
-yellow="\033[33m"
+# Someday
+# black="\033[30m"
+# blue="\033[34m"
+# cyan="\033[36m"
+# grey="\033[30;1m"
+# green="\033[32m"
+# magenta="\033[35m"
+# red="\033[31m"
+# white="\033[37m"
+# yellow="\033[33m"
+# 
+# ## Text Effect Definitions
+# regular=""
+# bold="\033[1m"
+# italic="\033[3m"
+# underline="\033[4m"
+# 
+# treset="\033[m"
 
 ## Functions
 print_help() {
@@ -88,14 +93,23 @@ dependency_check() {
         true
     elif [ -x "$(command -v curl)" ]; then
         dl_agent="$(command -v curl)"
-    elif [ ! -x "$(command -v wget)" ]; then
+    elif [ -x "$(command -v wget)" ]; then
         dl_agent="$(command -v wget)"
-    elif [ ! -x "$(command -v fetch)" ]; then
+    elif [ -x "$(command -v fetch)" ]; then
         dl_agent="$(command -v fetch)"
     else
         printf "Error: neither curl nor wget found.\n"
         exit 1
     fi
+
+#    case "$color" in
+#        true|yes)
+#            color=true ;;
+#        auto)
+#            [ "$(tput colors)" ] || unset "$color" ;;
+#        *)
+#            unset "$color" ;;
+#    esac
 
     if [ -z "$skip_checks" ]; then
         return 0
@@ -168,16 +182,16 @@ print_nowplaying() {
                   fi
 
                   # Line 1
-                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$bold$green" "$__count." "$__album" ""
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__count." "$__album" ""
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user" "$reset"
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
                 else
 
                 # Otherwise everything on one line
-              printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-                  "$bold$green" "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" "$reset"
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
               fi
             ;;
 
@@ -197,16 +211,16 @@ print_nowplaying() {
                   fi
 
                   # Line 1
-                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$bold$yellow" "$__count." "$__album" ""
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__count." "$__album" ""
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user" "$reset"
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "" "$__track $(print_delim ${#__track} ${__col2})" "$__user"
                 else
 
                     # All on one line
-              printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-                  "$bold$yellow" "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" "$reset"
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
 
               fi
             ;;
@@ -217,8 +231,8 @@ print_nowplaying() {
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
-              printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-                  "$bold$blue" "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" "$reset"
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" 
             ;;
     esac
 }
@@ -296,7 +310,7 @@ parse_plexml() {
         if printf "%s\n" "$line" | grep -q 'User id'; then
             __user="$(get_element "title" "$line")"
             if [ "$__count" -eq 0 ]; then
-                printf "%bNow Playing on Plex:%b\n" "$bold$italic" "$reset"
+                printf "Now Playing on Plex:\n" 
                 __count="$((__count+1))"
             fi
             print_nowplaying "$__count" "$__album" "$__track" \
@@ -315,16 +329,22 @@ fi
 main() {
     while [ "$#" -gt 0 ]; do
         case "$1" in 
-             --plex|-p)
+         --plex|-p)
                 plex_host="$2"
                 shift 2 ;;
-            --width|-w)
+        --width|-w)
                 max_width="$2"
                 shift 2 ;;
-            --delim|-d)
+        --delim|-d)
                 dot_leader="$2"
                 shift 2 ;;
-            --force|-f)
+           --color)
+                color="yes"
+                shift 1 ;;
+            --file)
+                plex_file="$2"
+                shift 2 ;;
+        --force|-f)
                 skip_checks=1
                 shift 1 ;;
             --file)
