@@ -25,7 +25,7 @@
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="0.93"
+version="0.94"
 
 plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
@@ -33,6 +33,7 @@ dot_leader="."                  # Delimiter used for dot leader.
 dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
+plex_token=""                   # Auth token for Plex
 # color=auto
 
 ## Text Color Definitions
@@ -72,6 +73,8 @@ Example: '"$prgnam" -p localhost,192.168.1.1 -w 80 -d "."
                       Default=localhost,127.0.0.1
 
         OPTIONAL PARAMATERS:
+
+        --token, -t   Plex Auth Token
 
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
@@ -252,19 +255,30 @@ get_element() {
         cut -d '=' -f 2 | tr -d '"' | sed -e "s/\&\#39\;/'/g"
 }
 
+session_url() {
+    __host="$1"
+    if [ -n "$plex_token" ]; then
+        printf "http://%s:32400/status/sessions?X-Plex-Token=%s" \
+            "$__host" "$plex_token"
+    else
+        printf "http://%s:32400/status/sessions" \
+            "$__host"
+    fi
+}
+
 download_session() {
     __host="$1"
     case "$dl_agent" in
         *curl)
-            "$dl_agent" -m 2 -s http://"$__host":32400/status/sessions
+            "$dl_agent" -m 2 -s "$(session_url "$__host")"
             return "$?" 
             ;;
          *wget)
-            "$dl_agent" -T 2 -qO - http://"$__host":32400/status/sessions
+            "$dl_agent" -T 2 -qO - "$(session_url "$__host")"
             return "$?" 
             ;;
          *fetch)
-            "$dl_agent" -T 2 -qO - http://"$__host":32400/status/sessions
+            "$dl_agent" -T 2 -qO - "$(session_url "$__host")"
             return "$?" 
             ;;
         esac
@@ -277,6 +291,7 @@ get_plexml() {
     fi
     oldIFS=$IFS
     IFS=,
+    # we are intentionally word-splitting
     # shellcheck disable=2086
     set -- ${plex_host}
     for __host in "$@"; do
@@ -342,24 +357,24 @@ main() {
          --plex|-p)
                 plex_host="$2"
                 shift 2 ;;
+        --token|-t)
+                plex_token="$2"
+                shift 2 ;;
         --width|-w)
                 max_width="$2"
                 shift 2 ;;
         --delim|-d)
                 dot_leader="$2"
                 shift 2 ;;
-           #--color)
-           #     color="yes"
-           #     shift 1 ;;
+         #--color)
+         #     color="yes"
+         #     shift 1 ;;
             --file)
                 plex_file="$2"
                 shift 2 ;;
         --force|-f)
                 skip_checks=1
                 shift 1 ;;
-            --file)
-                plex_file="$2"
-                shift 2 ;;
             --curl)
                 dl_agent="$(command -v curl)"
                 shift 1 ;;

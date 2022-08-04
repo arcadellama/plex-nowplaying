@@ -9,7 +9,7 @@ This started out as a quick way to make sure I didn't kick anyone off the Plex s
 ### Features
 - Fully POSIX-compliant out of the box
 - Tested on macOS, Debian, Ubuntu, Fedora, Slackware, and FreeBSD
-- Currently only works with authentication disabled for local network
+- Now works with a [PLEX AUTH TOKEN](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/)
 
 ### Dependencies
 - Just about any shell (sh, bash, zsh, fish, tcsh...)
@@ -48,8 +48,8 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 - 2 No XML file found
 
 ### Roadmap
-- [ ] Add PLEX AUTH TOKEN option for servers without local auth turned off
+- [x] Add PLEX AUTH TOKEN option for servers without local auth turned off
+- [x] Remove BASHisms and make it pure sh/posix compatible
 - [ ] Reduce the dependancy on grep and sed
 - [ ] Add colors, bold, italics, etc.
 - [ ] Create a MAKEFILE for installation
-- [x] Remove BASHisms and make it pure sh/posix compatible
