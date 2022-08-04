@@ -171,7 +171,7 @@ print_nowplaying() {
 
     __col1="$((${#__count} + 1))"
     __col3="$((${#__user} + 1))"
-    __col2="$((__columns - (__col3 +  __col1) - 4))"
+    __col2="$((__columns - (__col3 + __col1) - 4))"
 
 
     case "$__type" in
@@ -197,14 +197,14 @@ print_nowplaying() {
                   printf "%${__col1}s %b%-${__col2}s%b%${__col3}s%b\n" \
                       "" "$bold" "$__track \
                       $(print_delim ${#__track} ${__col2})" \
-                      "$bold" "$__user" "$treset"
+                      "$bold" "$__user $__transcode" "$treset"
                 else
 
                 # Otherwise everything on one line
               printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
                   "$bold" "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user" "$treset"
+                  "$bold" "$__user $__transcode" "$treset"
               fi
             ;;
 
@@ -230,14 +230,14 @@ print_nowplaying() {
                   printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
                       "$bold" "" "$__track \
                       $(print_delim ${#__track} ${__col2})" \
-                      "$bold" "$__user" "$treset"
+                      "$bold" "$__user $__transcode" "$treset"
                 else
 
                     # All on one line
-              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b \n" \
+              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
                   "$bold" "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user $(print_escape $__transcode)" "$treset"
+                  "$bold" "$__user $__transcode" "$treset"
 
               fi
             ;;
