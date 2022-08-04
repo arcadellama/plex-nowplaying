@@ -25,14 +25,10 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 ### Configuration
 
     Example: nowplaying -p 192.168.1.1 --token <PLEX_AUTH_TOKEN> 
-
-        REQUIRED PARAMATERS:
             
         --plex, -p    IP address(es) or domain name of Plex Server
                       separated by commas, no spaces.
                       Default=localhost,127.0.0.1
-
-        OPTIONAL PARAMATERS:
 
         --token, -t   Plex Auth Token
 
