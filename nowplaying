@@ -167,9 +167,9 @@ print_nowplaying() {
 
      Embed transcode status into user name
      perhaps in the future the color can change or something
-    if [ -n "$__transcode" ]; then
-        __user="${__user} $(printf "\u2022")"
-    fi
+#    if [ -n "$__transcode" ]; then
+#        __user="${__user} $(printf "\u2022")"
+#    fi
     
     if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
        __columns="$max_width"
