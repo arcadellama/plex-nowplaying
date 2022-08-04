@@ -353,9 +353,9 @@ parse_plexml() {
     *TranscodeSession*)
                 if [ "$(get_element "transcodeHwRequested" "$line")" = 1 ]
                 then
-                    __transcode='\u2022'
+                    __transcode=\u2022
                 else
-                    __transcode='\u25e6'
+                    __transcode=\u25e6
                 fi
                 continue ;;
 
