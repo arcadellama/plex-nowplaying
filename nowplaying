@@ -91,18 +91,30 @@ Example: '"$prgnam" -p localhost,192.168.1.1 -w 80 -d "."
 EOF
 }
 
-dependency_check() {
-    if [ -n "$dl_agent" ]; then
-        true
-    elif [ -x "$(command -v curl)" ]; then
+get_download_agent() {
+    if [ -n "$skip_checks" ]; then
+        return 0
+    fi
+
+    if [ -x "$(command -v curl)" ]; then
         dl_agent="$(command -v curl)"
+        return 0
     elif [ -x "$(command -v wget)" ]; then
         dl_agent="$(command -v wget)"
+        return 0
     elif [ -x "$(command -v fetch)" ]; then
         dl_agent="$(command -v fetch)"
+        return 0
     else
         printf "Error: curl, wget, or fetch not found.\n"
         exit 1
+    fi
+}
+
+dependency_check() {
+    get_download_agent
+    if [ -n "$skip_checks" ]; then
+        return 
     fi
 
 #    case "$color" in
@@ -113,10 +125,6 @@ dependency_check() {
 #        *)
 #            unset "$color" ;;
 #    esac
-
-    if [ -z "$skip_checks" ]; then
-        return 0
-    fi
 
     # Let's make sure everything is here
     for __coreutil in tput grep cut sed; do
@@ -377,12 +385,15 @@ main() {
                 shift 1 ;;
             --curl)
                 dl_agent="$(command -v curl)"
+                skip_checks=1
                 shift 1 ;;
             --wget)
                 dl_agent="$(command -v wget)"
+                skip_checks=1
                 shift 1 ;;
            --fetch)
                 dl_agent="$(command -v fetch)"
+                skip_checks=1
                 shift 1 ;;
          --help|-h)
                 print_help
