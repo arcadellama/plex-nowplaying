@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env sh
 
 # nowplaying.sh – A simple, POSIX-compliant shell script to print the
 # "Now Playing" status of a local Plex Server to stdout.
@@ -36,6 +36,7 @@ plex_file=""                    # Optional XML for testing
 # color=auto
 
 ## Text Color Definitions
+<<<<<<< HEAD
 # Someday
 # black="\033[30m"
 # blue="\033[34m"
@@ -54,6 +55,22 @@ plex_file=""                    # Optional XML for testing
 # underline="\033[4m"
 # 
 # treset="\033[m"
+=======
+#reset="\033[m"
+#bold="\033[1m"
+#italic="\033[3m"
+#underline="\033[4m"
+#
+#black="\033[30m"
+#blue="\033[34m"
+#cyan="\033[36m"
+#grey="\033[30;1m"
+#green="\033[32m"
+#magenta="\033[35m"
+#red="\033[31m"
+#white="\033[37m"
+#yellow="\033[33m"
+>>>>>>> 19d10be7d2239f16f005201e1893bc5966a5071a
 
 ## Functions
 print_help() {
@@ -98,7 +115,7 @@ dependency_check() {
     elif [ -x "$(command -v fetch)" ]; then
         dl_agent="$(command -v fetch)"
     else
-        printf "Error: neither curl nor wget found.\n"
+        printf "Error: curl, wget, or fetch not found.\n"
         exit 1
     fi
 
@@ -232,7 +249,11 @@ print_nowplaying() {
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
               printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+<<<<<<< HEAD
                   "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user" 
+=======
+                  "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
+>>>>>>> 19d10be7d2239f16f005201e1893bc5966a5071a
             ;;
     esac
 }
@@ -310,7 +331,11 @@ parse_plexml() {
         if printf "%s\n" "$line" | grep -q 'User id'; then
             __user="$(get_element "title" "$line")"
             if [ "$__count" -eq 0 ]; then
+<<<<<<< HEAD
                 printf "Now Playing on Plex:\n" 
+=======
+                printf "Now Playing on Plex:\n"
+>>>>>>> 19d10be7d2239f16f005201e1893bc5966a5071a
                 __count="$((__count+1))"
             fi
             print_nowplaying "$__count" "$__album" "$__track" \
