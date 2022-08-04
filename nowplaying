@@ -145,6 +145,10 @@ truncate_string() {
     printf "%s..." "$__string"
 }
 
+print_escape_seq() {
+    printf "%b" "$1"
+}
+
 print_delim() {
     __word="$1"
     __width="$2"
@@ -168,7 +172,7 @@ print_nowplaying() {
     # Embed transcode status into user name
     # perhaps in the future the color can change or something
     if [ -n "$__transcode" ]; then
-        __user="${__user}${__transcode}"
+        __user="${__user} $(print_escape_seq "${__transcode}")"
     fi
     
     if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
@@ -349,9 +353,9 @@ parse_plexml() {
     *TranscodeSession*)
                 if [ "$(get_element "transcodeHwRequested" "$line")" = 1 ]
                 then
-                    __transcode="(hw)"
+                    __transcode='\u2022'
                 else
-                    __transcode="(t)"
+                    __transcode='\u25e6'
                 fi
                 continue ;;
 
