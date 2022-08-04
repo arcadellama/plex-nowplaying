@@ -42,7 +42,7 @@ plex_token=""                   # Auth token for Plex
 # blue="\033[34m"
 # cyan="\033[36m"
 # grey="\033[30;1m"
-# green="\033[32m"
+green="\033[32m"
 # magenta="\033[35m"
 # red="\033[31m"
 # white="\033[37m"
@@ -165,12 +165,6 @@ print_nowplaying() {
     __transcode="$7"
     __columns="$("$(command -v tput)" cols)"
 
-     Embed transcode status into user name
-     perhaps in the future the color can change or something
-#    if [ -n "$__transcode" ]; then
-#        __user="${__user} $(printf "\u2022")"
-#    fi
-    
     if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
        __columns="$max_width"
     fi
@@ -243,7 +237,7 @@ print_nowplaying() {
               printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b \n" \
                   "$bold" "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user" "$treset"
+                  "$bold" "$__user $(print_escape $__transcode)" "$treset"
 
               fi
             ;;
@@ -257,7 +251,7 @@ print_nowplaying() {
               printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
                   "$bold" "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user" "$treset"
+                  "$bold" "$__user $__transcode" "$treset" 
             ;;
     esac
 }
@@ -349,9 +343,9 @@ parse_plexml() {
     *TranscodeSession*)
                 if [ "$(get_element "transcodeHwRequested" "$line")" = 1 ]
                 then
-                    __transcode="$(printf "\u2022")"
+                    __transcode="$(printf "%b•%b" "$green" "$treset")"
                 else
-                    __transcode="$(printf "\u25e6")"
+                    __transcode="$(printf "%b◦%b" "$blue" "$treset")"
                 fi
                 continue ;;
 

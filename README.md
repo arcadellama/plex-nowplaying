@@ -15,6 +15,7 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 - Just about any shell (sh, bash, zsh, fish, tcsh...)
 - curl, wget, or fetch (looks in that order)
 - Standard coreutils: sed, grep, command, tput
+- Green indicator for hardware transcoding, Blue indicator for software transcoding
 
 ### Installation
 Simply clone and copy the script it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
