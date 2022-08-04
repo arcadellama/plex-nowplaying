@@ -25,7 +25,7 @@
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="0.94"
+version="0.95"
 
 plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
@@ -387,7 +387,10 @@ main() {
          --help|-h)
                 print_help
                 exit 0 ;;
-                     *)
+      --version|-v)
+                printf "%s: %s\n" "$prgnam" "$version"
+                exit 0 ;;
+                 *)
 	            printf "ERROR: \"%s\" is not a valid expression.\n" "$1"
 	            printf "Try \"%s\" --help for help.\n" "$prgnam"
                 exit 1 ;;
