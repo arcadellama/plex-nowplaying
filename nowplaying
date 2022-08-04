@@ -145,10 +145,6 @@ truncate_string() {
     printf "%s..." "$__string"
 }
 
-print_escape_seq() {
-    printf "%b" "$1"
-}
-
 print_delim() {
     __word="$1"
     __width="$2"
@@ -169,18 +165,18 @@ print_nowplaying() {
     __transcode="$7"
     __columns="$("$(command -v tput)" cols)"
 
-    # Embed transcode status into user name
-    # perhaps in the future the color can change or something
-    #if [ -n "$__transcode" ]; then
-    #    __user="${__user} $(print_escape_seq "${__transcode}")"
-    #fi
+     Embed transcode status into user name
+     perhaps in the future the color can change or something
+    if [ -n "$__transcode" ]; then
+        __user="${__user} ${__transcode}"
+    fi
     
     if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
        __columns="$max_width"
     fi
 
     __col1="$((${#__count} + 1))"
-    __col3="$((${#__user} + 3))"
+    __col3="$((${#__user} + 1))"
     __col2="$((__columns - (__col3 +  __col1) - 4))"
 
 
@@ -353,9 +349,9 @@ parse_plexml() {
     *TranscodeSession*)
                 if [ "$(get_element "transcodeHwRequested" "$line")" = 1 ]
                 then
-                    __transcode="u2022"
+                    __transcode="$(printf "\u2022")"
                 else
-                    __transcode="\u25e6"
+                    __transcode="$(printf "\u25e6")"
                 fi
                 continue ;;
 
