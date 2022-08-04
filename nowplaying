@@ -176,7 +176,7 @@ print_nowplaying() {
                 else
 
                 # Otherwise everything on one line
-              printf "b%${__col1}s %-${__col2}s%${__col3}s\n" \
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                   "$__count." "$__title $(print_delim ${#__title} ${__col2})" "$__user"
               fi
             ;;
