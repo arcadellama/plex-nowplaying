@@ -318,24 +318,47 @@ parse_plexml() {
 
     __count=0
     while IFS= read -r line; do
-        case "$(get_element "type" "$line")" in
-          episode)
-                  __type="episode"
-                  __album="$(get_element "grandparentTitle" "$line")"
-                  __track="$(get_element "title" "$line")"
-                  continue ;;
-          track)
-              __type="track"
-              __album="$(get_element "grandparentTitle" "$line")"
-              __track="$(get_element "title" "$line")"
-              continue ;;
-          movie)
-              __type="movie"
-              __title="$(get_element "title" "$line")"
-              continue ;;
-        esac
+	case "$line" in
+	?Video*|?Track*)
+	set -f
+	oldIFS=$IFS
+	IFS='"'
+	set -- ${line}
+	while [ "$#" -gt 0 ]; do
+	    case "${1## }" in
+	        type=)
+		    __type="$2"
+		    shift 2 ;;
+		grandparentTitle=)
+		    __album="$2"
+		    shift 2 ;;
+		title=)
+		    __track="$2"
+		    shift 2 ;;
+		    *)
+		    shift ;;
+	    esac
+	done
+	IFS=$oldIFS
+	set +f
+	;;
+#        case "$(get_element "type" "$line")" in
+#          episode)
+#                  __type="episode"
+#                  __album="$(get_element "grandparentTitle" "$line")"
+#                  __track="$(get_element "title" "$line")"
+#                  continue ;;
+#          track)
+#              __type="track"
+#              __album="$(get_element "grandparentTitle" "$line")"
+#              __track="$(get_element "title" "$line")"
+#              continue ;;
+#          movie)
+#              __type="movie"
+#              __title="$(get_element "title" "$line")"
+#              continue ;;
+#        esac
 
-        case "$line" in
             *User\ id*)
                 __user="$(get_element "title" "$line")"
                 continue ;;
