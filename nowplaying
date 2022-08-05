@@ -158,11 +158,11 @@ print_delim() {
 print_nowplaying() {
     __count="$1"
     __album="$2"
-    __track="$3"
-    __title="$4"
-    __user="$5"
-    __type="$6"
-    __transcode="$7"
+    __title="$3"
+    __track="$__title"
+    __user="$4"
+    __type="$5"
+    __transcode="$6"
     __columns="$("$(command -v tput)" cols)"
 
     if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
@@ -191,13 +191,13 @@ print_nowplaying() {
                   fi
 
                   # Line 1
-                  printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-                      "$bold" "$__count." "$__album" "" "$treset"
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__count." "$__album" "" 
                   # Line 2
-                  printf "%${__col1}s %b%-${__col2}s%b%${__col3}s%b\n" \
-                      "" "$bold" "$__track \
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "" "$__track \
                       $(print_delim ${#__track} ${__col2})" \
-                      "$bold" "$__user $__transcode" "$treset"
+                      "$__user $__transcode" 
                 else
 
                 # Otherwise everything on one line
@@ -256,10 +256,10 @@ print_nowplaying() {
     esac
 }
 
-get_element() {
-    printf "%s\n" "${2}" | grep -Eo "${1}=\"[a-zA-Z0-9?!&()#:;.,-_ ]*\"" | \
-        cut -d '=' -f 2 | tr -d '"' | sed -e "s/\&\#39\;/'/g"
-}
+#get_element() {
+#    printf "%s\n" "${2}" | grep -Eo "${1}=\"[a-zA-Z0-9?!&()#:;.,-_ ]*\"" | \
+#        cut -d '=' -f 2 | tr -d '"' | sed -e "s/\&\#39\;/'/g"
+#}
 
 session_url() {
     __host="$1"
@@ -312,10 +312,8 @@ parse_plexml() {
     __title=""
     __user=""
     __album=""
-    __track=""
     __type=""
     __transcode=""
-
     __count=0
     while IFS= read -r line; do
 	case "$line" in
@@ -333,7 +331,7 @@ parse_plexml() {
 		    __album="$2"
 		    shift 2 ;;
 		title=)
-		    __track="$2"
+		    __title="$2"
 		    shift 2 ;;
 		    *)
 		    shift ;;
@@ -341,43 +339,60 @@ parse_plexml() {
 	done
 	IFS=$oldIFS
 	set +f
+	continue
 	;;
-#        case "$(get_element "type" "$line")" in
-#          episode)
-#                  __type="episode"
-#                  __album="$(get_element "grandparentTitle" "$line")"
-#                  __track="$(get_element "title" "$line")"
-#                  continue ;;
-#          track)
-#              __type="track"
-#              __album="$(get_element "grandparentTitle" "$line")"
-#              __track="$(get_element "title" "$line")"
-#              continue ;;
-#          movie)
-#              __type="movie"
-#              __title="$(get_element "title" "$line")"
-#              continue ;;
-#        esac
 
             *User\ id*)
-                __user="$(get_element "title" "$line")"
-                continue ;;
+                #__user="$(get_element "title" "$line")"
+	set -f
+	oldIFS=$IFS
+	IFS='"'
+	set -- ${line}
+	while [ "$#" -gt 0 ]; do
+	    case "${1## }" in
+	        title=)
+		    __user="$2"
+		    shift 2 ;;
+		    *)
+		    shift ;;
+	    esac
+	done
+	IFS=$oldIFS
+	set +f
+	continue
+	;;
+                #continue ;;
 
     *TranscodeSession*)
-                if [ "$(get_element "transcodeHwRequested" "$line")" = 1 ]
-                then
+	set -f
+	oldIFS=$IFS
+	IFS='"'
+	set -- ${line}
+	while [ "$#" -gt 0 ]; do
+	    case "${1## }" in
+	        transcodeHwRequested=)
+		    if [ "$2" = 1 ]; then
                     __transcode="$(printf "%b•%b" "$green" "$treset")"
                 else
                     __transcode="$(printf "%b◦%b" "$blue" "$treset")"
                 fi
-                continue ;;
+		    shift 2 ;;
+		    *)
+		    shift ;;
+	    esac
+	done
+	IFS=$oldIFS
+	set +f
+	continue
+	;;
+        #        continue ;;
 
       */Video*|*/Track*)
                 if [ "$__count" -eq 0 ]; then
                     printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
                     __count="$((__count+1))"
                 fi
-                print_nowplaying "$__count" "$__album" "$__track" \
+                print_nowplaying "$__count" "$__album" \
                     "$__title" "$__user" "$__type" "$__transcode"
                     __count="$((__count+1))"
                 continue ;;
