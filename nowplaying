@@ -41,7 +41,7 @@ plex_token=""                   # Auth token for Plex
 # red="\033[31m"
 green="\033[32m"
 # yellow="\033[33m"
-blue="\033[34m"
+# blue="\033[34m"
 # magenta="\033[35m"
 # cyan="\033[36m"
 # white="\033[37m"
@@ -344,6 +344,7 @@ parse_plexml() {
 		    *)
 		    shift ;;
 	    esac
+		    
 	done
 	IFS=$oldIFS
 	set +f
@@ -380,12 +381,12 @@ parse_plexml() {
 	set -- ${line}
 	while [ "$#" -gt 0 ]; do
 	    case "${1## }" in
-	        transcodeHwRequested=)
+	        transcodeHwFullPipeline=)
 		    if [ "$2" = 1 ]; then
-                    __transcode="$(printf "%b•%b" "$green" "$treset")"
-                else
-                    __transcode="$(printf "%b◦%b" "$blue" "$treset")"
-                fi
+                        __transcode="$(printf "%b•%b" "$green" "$treset")"
+                    else
+                        __transcode="$(printf "%b◦%b" "$green" "$treset")"
+                    fi
 		    shift 2 ;;
 		    *)
 		    shift ;;
