@@ -35,13 +35,17 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
 
-        --curl        Force curl as downloader.
+         --help, -h   This screen
 
-        --wget        Force wget as downloader.
+      --version, -v   Show version
 
-        --fetch       Force fetch as downloader.
+             --curl   Force curl as downloader.
 
-        --file        Point to a local XML file for debugging
+             --wget   Force wget as downloader.
+
+            --fetch   Force fetch as downloader.
+
+             --file   Point to a local XML file for debugging
 
 ### Exit Codes
 - 0 It worked
