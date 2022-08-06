@@ -10,12 +10,11 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 - Fully POSIX-compliant out of the box
 - Tested on macOS, Debian, Ubuntu, Fedora, Slackware, and FreeBSD
 - Now works with a [PLEX AUTH TOKEN](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/)
+- Green indicator for hardware transcoding, Blue indicator for software transcoding
 
 ### Dependencies
 - Just about any shell (sh, bash, zsh, fish, tcsh...)
 - curl, wget, or fetch (looks in that order)
-- Standard coreutils: sed, grep, command, tput
-- Green indicator for hardware transcoding, Blue indicator for software transcoding
 
 ### Installation
 Simply clone and copy the script it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
@@ -35,12 +34,11 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
-        --delim, -d   Dot leader for display. Default = "."
-       
-        --force, -f   Skip dependency checks.
 
         --curl        Force curl as downloader.
+
         --wget        Force wget as downloader.
+
         --fetch       Force fetch as downloader.
 
         --file        Point to a local XML file for debugging
@@ -48,12 +46,12 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 ### Exit Codes
 - 0 It worked
 - 1 Something went wrong
-- 2 No XML file found
+- 2 Nothing playing
 
 ### Roadmap
 - [x] Add PLEX AUTH TOKEN option for servers without local auth turned off
 - [x] Remove BASHisms and make it pure sh/posix compatible
 - [x] Add transcoding indicator
-- [ ] Reduce the dependancy on grep and sed
+- [x] Remove the dependancy on grep, sed, cut, and tput
 - [ ] Add colors, bold, italics, etc.
 - [ ] Create a MAKEFILE for installation

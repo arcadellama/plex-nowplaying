@@ -25,7 +25,7 @@
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="0.96"
+version="0.97"
 
 plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
@@ -37,19 +37,16 @@ plex_token=""                   # Auth token for Plex
 # color=auto
 
 ## Text Color Definitions
-# Someday
 # black="\033[30m"
-blue="\033[34m"
-# cyan="\033[36m"
-# grey="\033[30;1m"
-green="\033[32m"
-# magenta="\033[35m"
 # red="\033[31m"
-# white="\033[37m"
+green="\033[32m"
 # yellow="\033[33m"
+blue="\033[34m"
+# magenta="\033[35m"
+# cyan="\033[36m"
+# white="\033[37m"
 # 
 # ## Text Effect Definitions
-# regular=""
 bold="\033[1m"
 # italic="\033[3m"
 # underline="\033[4m"
@@ -74,12 +71,11 @@ Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
-        --delim, -d   Dot leader for display. Default = "."
-       
-        --force, -f   Skip dependency checks.
 
         --curl        Force curl as downloader.
+	
         --wget        Force wget as downloader.
+
         --fetch       Force fetch as downloader.
 
         --file        Point to a local XML file for debugging
@@ -87,7 +83,8 @@ Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 EOF
 }
 
-get_download_agent() {
+dependency_check() {
+
     if [ -n "$skip_checks" ]; then
         return 0
     fi
@@ -105,13 +102,6 @@ get_download_agent() {
         printf "Error: curl, wget, or fetch not found.\n"
         exit 1
     fi
-}
-
-dependency_check() {
-    get_download_agent
-    if [ -n "$skip_checks" ]; then
-        return 
-    fi
 
 #    case "$color" in
 #        true|yes)
@@ -121,14 +111,6 @@ dependency_check() {
 #        *)
 #            unset "$color" ;;
 #    esac
-
-    # Let's make sure everything is here
-    for __coreutil in tput grep cut sed; do
-        if [ ! "$(command -v $__coreutil)" ]; then
-            printf "Error: \"%s\" not found.\n" "$__coreutil"
-            exit 1
-        fi
-    done
 
 }
 
@@ -155,18 +137,44 @@ print_delim() {
     done
 }
 
+fix_apostrophe() {
+    __input="$1"
+    __oldIFS=$IFS
+    IFS='&'
+    # shellcheck disable=2086
+    set -- ${__input}
+    case "$2" in
+        \#39\;*)
+	IFS=$__oldIFS
+	printf "%s'%s" "$1" "${2##\#39\;}"
+	;;
+	*)
+	printf "%s" "$1"
+    esac
+}
+	
 print_nowplaying() {
     __count="$1"
-    __album="$2"
-    __title="$3"
+    __album="$(fix_apostrophe "$2")"
+    __title="$(fix_apostrophe "$3")"
     __track="$__title"
     __user="$4"
     __type="$5"
     __transcode="$6"
-    __columns="$("$(command -v tput)" cols)"
+    __columns=""
 
-    if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
-       __columns="$max_width"
+    # Set column width
+    if [ "$(command -v tput)" ]; then
+	__columns="$("$(command -v tput)" cols)"
+	if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
+	    __columns="$max_width"
+	fi
+    else
+	if [ "$max_width" -ne 0 ]; then
+	    __columns="$max_width"
+	else
+	    __columns="80"
+	fi
     fi
 
     __col1="$((${#__count} + 1))"
@@ -189,15 +197,14 @@ print_nowplaying() {
                   if [ "${#__track}" -gt "$__col2" ]; then
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
-
+		  __album="${__album}:"
                   # Line 1
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." "$__album" "" 
+                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$bold" "$__count." "$__album" "" 
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "" "$__track \
-                      $(print_delim ${#__track} ${__col2})" \
-                      "$__user $__transcode" 
+                  printf "%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                      "" "$__track $(print_delim ${#__track} ${__col2})" \
+                      "$bold" "$__user $__transcode" "$treset"
                 else
 
                 # Otherwise everything on one line
@@ -223,20 +230,21 @@ print_nowplaying() {
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
 
+		  __album="${__album}:"
+
                   # Line 1
-                  printf "%b%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-                      "$bold" "$__count." "$__album" "" "$treset"
+                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$bold" "$__count." "$__album" ""
                   # Line 2
-                  printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
-                      "$bold" "" "$__track \
-                      $(print_delim ${#__track} ${__col2})" \
+                  printf "%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                      "" "$__track $(print_delim ${#__track} ${__col2})" \
                       "$bold" "$__user $__transcode" "$treset"
                 else
 
                     # All on one line
-              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
-                  "$bold" "$__count." \
-                  "$__title $(print_delim ${#__title} ${__col2})" \
+                  printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+		      "$bold" "$__count." \
+                      "$__title $(print_delim ${#__title} ${__col2})" \
                   "$bold" "$__user $__transcode" "$treset"
 
               fi
@@ -255,11 +263,6 @@ print_nowplaying() {
             ;;
     esac
 }
-
-#get_element() {
-#    printf "%s\n" "${2}" | grep -Eo "${1}=\"[a-zA-Z0-9?!&()#:;.,-_ ]*\"" | \
-#        cut -d '=' -f 2 | tr -d '"' | sed -e "s/\&\#39\;/'/g"
-#}
 
 session_url() {
     __host="$1"
@@ -321,6 +324,7 @@ parse_plexml() {
 	set -f
 	oldIFS=$IFS
 	IFS='"'
+	# shellcheck disable=2086
 	set -- ${line}
 	while [ "$#" -gt 0 ]; do
 	    case "${1## }" in
@@ -347,6 +351,7 @@ parse_plexml() {
 	set -f
 	oldIFS=$IFS
 	IFS='"'
+	# shellcheck disable=2086
 	set -- ${line}
 	while [ "$#" -gt 0 ]; do
 	    case "${1## }" in
@@ -367,6 +372,7 @@ parse_plexml() {
 	set -f
 	oldIFS=$IFS
 	IFS='"'
+	# shellcheck disable=2086
 	set -- ${line}
 	while [ "$#" -gt 0 ]; do
 	    case "${1## }" in
@@ -388,17 +394,18 @@ parse_plexml() {
         #        continue ;;
 
       */Video*|*/Track*)
-                if [ "$__count" -eq 0 ]; then
-                    printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
-                    __count="$((__count+1))"
-                fi
-                print_nowplaying "$__count" "$__album" \
-                    "$__title" "$__user" "$__type" "$__transcode"
-                    __count="$((__count+1))"
-                continue ;;
-        esac
+       if [ "$__count" -eq 0 ]; then
+           printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
+	   __count="$((__count+1))"
+       fi
+       print_nowplaying "$__count" "$__album" \
+           "$__title" "$__user" "$__type" "$__transcode"
+        __count="$((__count+1))"
+       continue
+       ;;
+       esac
     done << EOF
-    "$(get_plexml)"
+"$(get_plexml)"
 EOF
 if [ $__count -eq 0 ]; then
     return 2
@@ -418,6 +425,7 @@ main() {
                 max_width="$2"
                 shift 2 ;;
         --delim|-d)
+		printf "NOTICE: --delim, -d is deprecated\n"
                 dot_leader="$2"
                 shift 2 ;;
          #--color)
@@ -427,6 +435,7 @@ main() {
                 plex_file="$2"
                 shift 2 ;;
         --force|-f)
+		printf "NOTICE: --force is deprecated\n"
                 skip_checks=1
                 shift 1 ;;
             --curl)
