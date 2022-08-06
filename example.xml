@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MediaContainer size="2">
+<Video addedAt="1581910497" art="/library/metadata/21613/art/1584326059" contentRating="TV-MA" duration="1786496" grandparentArt="/library/metadata/21613/art/1584326059" grandparentGuid="com.plexapp.agents.thetvdb://364106?lang=en" grandparentKey="/library/metadata/21613" grandparentRatingKey="21613" grandparentThumb="/library/metadata/21613/thumb/1584326059" grandparentTitle="Avenue 5" guid="com.plexapp.agents.thetvdb://364106/1/5?lang=en" index="5" key="/library/metadata/23375" librarySectionID="13" librarySectionKey="/library/sections/13" librarySectionTitle="TV Shows" originallyAvailableAt="2020-02-16" parentGuid="com.plexapp.agents.thetvdb://364106/1?lang=en" parentIndex="1" parentKey="/library/metadata/21614" parentRatingKey="21614" parentThumb="/library/metadata/21614/thumb/1584326059" parentTitle="Season 1" ratingKey="23375" sessionKey="71" summary="Billie seeks her moment in the limelight after stepping in to help Ryan during the ship&#39;s newest crisis. Iris vets comedian Jordan Hatwal&#39;s material for the Halfway Home Party, which Judd has decided should go on as planned. Doug tries to get in the way of Mia&#39;s newfound sexual freedom." thumb="/library/metadata/23375/thumb/1627688976" title="He&#39;s Only There to Stop His Skeleton Falling Over" type="episode" updatedAt="1627688976" viewOffset="49242" year="2020">
+<Media aspectRatio="1.78" audioChannels="6" audioCodec="eac3" bitrate="9859" container="mkv" duration="1786496" height="1080" id="39895" videoCodec="h264" videoFrameRate="24p" videoProfile="high" videoResolution="1080" width="1920" selected="1">
+<Part container="mkv" duration="1786496" file="/media/arcadepool/plexmedia/tv/Avenue 5/Season 1/Avenue 5 - S01E05 - He&#39;s Only There To Stop His Skeleton Falling Over WEBDL-1080p.mkv" id="70800" indexes="sd" key="/library/parts/70800/1581920758/file.mkv" size="2201619152" videoProfile="high" decision="directplay" selected="1">
+<Stream bitDepth="8" bitrate="9859" chromaLocation="left" chromaSubsampling="4:2:0" codec="h264" codedHeight="1088" codedWidth="1920" colorPrimaries="bt709" colorRange="tv" colorSpace="bt709" colorTrc="bt709" default="1" displayTitle="1080p (H.264)" extendedDisplayTitle="1080p (H.264)" frameRate="23.976" hasScalingMatrix="0" height="1080" id="203338" index="0" level="40" profile="high" refFrames="4" scanType="progressive" streamType="1" width="1920" location="direct" />
+<Stream audioChannelLayout="5.1(side)" channels="6" codec="eac3" default="1" displayTitle="English (EAC3 5.1)" extendedDisplayTitle="English (EAC3 5.1)" id="203339" index="1" language="English" languageCode="eng" languageTag="en" samplingRate="48000" selected="1" streamType="2" location="direct" />
+</Part>
+</Media>
+<Writer filter="writer=5306" id="5306" tag="Armando Iannucci" />
+<Writer filter="writer=62529" id="62529" tag="Peter Baynham" />
+<User id="1" thumb="https://plex.tv/users/77fd0f549668bc8c/avatar?c=1658638937" title="arcadellama" />
+<Session id="AF4BECD4-C97E-4EE8-B0FE-596D7C522592" bandwidth="10861" location="lan" />
+</Video>
+<Video addedAt="1657771940" art="/library/metadata/58569/art/1659068275" audienceRating="7.7" audienceRatingImage="rottentomatoes://image.rating.upright" contentRating="PG-13" duration="8851359" guid="plex://movie/5d777038594b2b001e746fa9" key="/library/metadata/58569" lastViewedAt="1659651709" librarySectionID="1" librarySectionKey="/library/sections/1" librarySectionTitle="Movies" originallyAvailableAt="2022-06-01" primaryExtraKey="/library/metadata/58570" rating="3.0" ratingImage="rottentomatoes://image.rating.rotten" ratingKey="58569" sessionKey="70" studio="Universal Pictures" summary="Four years after the destruction of Isla Nublar, dinosaurs now live--and hunt--alongside humans all over the world. This fragile balance will reshape the future and determine, once and for all, whether human beings are to remain the apex predators on a planet they now share with history&#39;s most fearsome creatures in a new Era." tagline="The epic conclusion of the Jurassic era." thumb="/library/metadata/58569/thumb/1659068275" title="Jurassic World Dominion" type="movie" updatedAt="1659068275" viewOffset="69000" year="2022">
+<Media id="131510" videoProfile="high" audioChannels="2" audioCodec="aac" bitrate="9194" container="mp4" duration="8851359" height="960" optimizedForStreaming="1" protocol="dash" videoCodec="h264" videoFrameRate="24p" videoResolution="1080p" width="1920" selected="1">
+<Part id="150259" indexes="sd" videoProfile="high" bitrate="9194" container="mp4" duration="8851359" height="960" optimizedForStreaming="1" protocol="dash" width="1920" decision="transcode" selected="1">
+<Stream bitDepth="8" bitrate="8938" chromaLocation="left" chromaSubsampling="4:2:0" codec="h264" codedHeight="960" codedWidth="1920" colorPrimaries="bt709" colorRange="tv" colorSpace="bt709" colorTrc="bt709" default="1" displayTitle="1080p (H.264)" extendedDisplayTitle="1080p (H.264)" frameRate="23.975999832153320" hasScalingMatrix="0" height="960" id="417934" level="40" profile="high" refFrames="4" scanType="progressive" streamType="1" width="1920" decision="copy" location="segments-video" />
+<Stream bitrate="256" bitrateMode="cbr" channels="2" codec="aac" default="1" displayTitle="English (EAC3 5.1)" extendedDisplayTitle="English (EAC3 5.1)" id="417935" language="English" languageCode="eng" languageTag="en" selected="1" streamType="2" decision="transcode" location="segments-audio" />
+</Part>
+</Media>
+<Genre count="318" filter="genre=298" id="298" tag="Science Fiction" />
+<Genre count="462" filter="genre=149" id="149" tag="Action" />
+<Genre count="539" filter="genre=18" id="18" tag="Adventure" />
+<Genre count="455" filter="genre=299" id="299" tag="Thriller" />
+<Director count="2" filter="director=157050" id="157050" tag="Colin Trevorrow" />
+<Writer count="5" filter="writer=143660" id="143660" tag="Michael Crichton" />
+<Writer count="4" filter="writer=157054" id="157054" tag="Colin Trevorrow" />
+<Writer count="6" filter="writer=157128" id="157128" tag="Derek Connolly" />
+<Writer count="2" filter="writer=165371" id="165371" tag="Emily Carmichael" />
+<Producer count="9" filter="producer=138665" id="138665" tag="Frank Marshall" />
+<Producer count="5" filter="producer=140537" id="140537" tag="Patrick Crowley" />
+<Country count="1340" filter="country=57259" id="57259" tag="United States of America" />
+<Rating count="1473" image="imdb://image.rating" type="audience" value="5.8" />
+<Rating count="1086" image="rottentomatoes://image.rating.upright" type="audience" value="7.7" />
+<Rating count="414" image="rottentomatoes://image.rating.rotten" type="critic" value="3.0" />
+<Rating count="1475" image="themoviedb://image.rating" type="audience" value="7.1" />
+<Collection count="4" filter="collection=157152" guid="plex://collection/5ec2f5b2a2bccc0040959adb" id="157152" summary="An American science fiction adventure film series based on the novel of the same name by Michael Crichton. The films center on the fictional Isla Nublar near Costa Rica in the Central American Pacific Coast, where a billionaire philanthropist and a small team of genetic scientists have created an amusement park of cloned dinosaurs." tag="Jurassic Park Collection" />
+<Role count="14" filter="actor=136776" id="136776" role="Owen Grady" tag="Chris Pratt" thumb="https://metadata-static.plex.tv/e/people/ec6bda50983c789a4699e304565d35f8.jpg" />
+<Role count="8" filter="actor=138212" id="138212" role="Claire Dearing" tag="Bryce Dallas Howard" thumb="https://metadata-static.plex.tv/9/people/96da405ff4c928c1eba4bd2ae653ed4a.jpg" />
+<Role count="8" filter="actor=140051" id="140051" role="Dr. Ellie Sattler" tag="Laura Dern" thumb="https://metadata-static.plex.tv/f/people/f0266c1228af576fc1e9d21d3600c3cb.jpg" />
+<Role count="12" filter="actor=135641" id="135641" role="Dr. Ian Malcolm" tag="Jeff Goldblum" thumb="https://metadata-static.plex.tv/a/people/ac106c4bcf74ec3b61c0cff89f63f198.jpg" />
+<Role count="10" filter="actor=143613" id="143613" role="Dr. Alan Grant" tag="Sam Neill" thumb="https://metadata-static.plex.tv/0/people/00b572f00ea12b6114c3af1e13b26f23.jpg" />
+<Role filter="actor=237580" id="237580" role="Kayla Watts" tag="DeWanda Wise" thumb="https://metadata-static.plex.tv/people/5d77686333f255001e854991.jpg" />
+<Role count="3" filter="actor=165213" id="165213" role="Ramsay Cole" tag="Mamoudou Athie" thumb="https://metadata-static.plex.tv/people/5d776ba1fb0d55001f56dd85.jpg" />
+<Role count="2" filter="actor=157130" id="157130" role="Maisie Lockwood" tag="Isabella Sermon" thumb="https://metadata-static.plex.tv/f/people/f5932d4cb772174051d9ba9ac05e0c3c.jpg" />
+<Role count="3" filter="actor=134367" id="134367" role="Lewis Dodgson" tag="Campbell Scott" thumb="https://metadata-static.plex.tv/3/people/31f11ebe035ac3b4af900e3f5789ab30.jpg" />
+<Role count="8" filter="actor=148281" id="148281" role="Dr. Henry Wu" tag="BD Wong" thumb="https://metadata-static.plex.tv/0/people/0ca37c0a1e9817d45d134c8950ffa576.jpg" />
+<Role count="6" filter="actor=135926" id="135926" role="Barry Semb&#232;ne" tag="Omar Sy" thumb="https://metadata-static.plex.tv/c/people/c6b7c8bf77a3ad5143a4800b1dca6662.jpg" />
+<Role count="4" filter="actor=132182" id="132182" role="Franklin Webb" tag="Justice Smith" thumb="https://metadata-static.plex.tv/people/5d776b0dad5437001f7916d7.jpg" />
+<Role count="2" filter="actor=157129" id="157129" role="Zia Rodriguez" tag="Daniella Pineda" thumb="https://metadata-static.plex.tv/f/people/fc838a4b92acc902f1fb5631f75e13e5.jpg" />
+<Role count="3" filter="actor=161583" id="161583" role="Rainn Delacourt" tag="Scott Haze" thumb="https://image.tmdb.org/t/p/original/6cd3Jt8Vo52j8cRKbNf1j7cERhs.jpg" />
+<Role count="2" filter="actor=167864" id="167864" role="Soyona Santos" tag="Dichen Lachman" thumb="https://metadata-static.plex.tv/people/5d77683c961905001eb95455.jpg" />
+<Role filter="actor=237581" id="237581" role="Jeremy Bernier" tag="Caleb Hearon" thumb="https://metadata-static.plex.tv/6/people/6c489d7e78144e4bbf01e3854dc2e9be.jpg" />
+<Role count="2" filter="actor=176985" id="176985" role="Wyatt Huntley" tag="Kristoffer Polaha" thumb="https://metadata-static.plex.tv/7/people/794f8f035338395410a620c3d1f6d162.jpg" />
+<Role filter="actor=237582" id="237582" role="Denise Roberts" tag="Freya Parker" thumb="https://metadata-static.plex.tv/4/people/4f43bb26e72c023b835ac9ae04f8f389.jpg" />
+<Role filter="actor=237583" id="237583" role="Angus Hetbury" tag="Alexander Owen" thumb="https://metadata-static.plex.tv/0/people/0bb7e6f88359e4d6a3cee131c110b056.jpg" />
+<Role filter="actor=237584" id="237584" role="Jeffrey" tag="Joel Elferink" thumb="https://metadata-static.plex.tv/5/people/5cd9c58fed1e2b7a95945a1b49cf84a3.jpg" />
+<Role filter="actor=237585" id="237585" role="Charlotte Lockwood" tag="Elva Trill" thumb="https://metadata-static.plex.tv/9/people/90baa50fedf4befe1fc45f2e9fb62190.jpg" />
+<Role filter="actor=237586" id="237586" role="Drive in Movie Theatre Kid" tag="Lillia Langley" thumb="https://metadata-static.plex.tv/f/people/f5676f11900f33a1b78b1ca718259140.jpg" />
+<Role filter="actor=237587" id="237587" role="Carolyn O&#39;Hara" tag="Glynis Davies" thumb="https://metadata-static.plex.tv/c/people/c92a0b986917d574d58897b19679e79e.jpg" />
+<Role count="3" filter="actor=161206" id="161206" role="Maltese Smuggler" tag="Dimitri Vegas" thumb="https://metadata-static.plex.tv/people/5d776bfc7a53e9001e736033.jpg" />
+<Role filter="actor=237588" id="237588" role="Security Guard" tag="Adam Kiani" thumb="https://metadata-static.plex.tv/9/people/98133b611878868ff2a4284257620ddb.jpg" />
+<Role count="3" filter="actor=165483" id="165483" role="Wigi" tag="Enzo Squillino Jr." thumb="https://metadata-static.plex.tv/people/5d776839a091de001f2e8887.jpg" />
+<Role filter="actor=237589" id="237589" role="Ramon" tag="Bastian Antonio Fuentes" thumb="https://metadata-static.plex.tv/7/people/78a58b91e43151094900de46fd94233f.jpg" />
+<Role count="6" filter="actor=136242" id="136242" role="Biosyn Scientist" tag="Bernardo Santos" thumb="https://metadata-static.plex.tv/people/5d776ab0ad5437001f785b62.jpg" />
+<Role count="2" filter="actor=164099" id="164099" role="Washington Pedestrian" tag="Ross Donnelly" />
+<Role filter="actor=237590" id="237590" role="Alicia" tag="Manuela Mora" thumb="https://metadata-static.plex.tv/5/people/5ae1a29ba4e346b956fa2b1d51202282.jpg" />
+<Role filter="actor=237591" id="237591" role="Farmer" tag="Teresa Cendon-Garcia" thumb="https://metadata-static.plex.tv/0/people/0d51a390226db9586f1ad515da06bfbc.jpg" />
+<Role count="2" filter="actor=205115" id="205115" role="Maltese Gangster" tag="Metin Hassan" thumb="https://metadata-static.plex.tv/8/people/8b4da9352ffbc358bcf5344527300b2f.jpg" />
+<Role filter="actor=237592" id="237592" role="Hunter" tag="Cokey Falkow" thumb="https://metadata-static.plex.tv/4/people/443733ac8c0b9b8753df6b1b1f8ba234.jpg" />
+<Role filter="actor=237593" id="237593" role="Gemma Zhao" tag="Jasmine Chiu" />
+<Role filter="actor=237594" id="237594" role="Rosa Delgado" tag="Emilie Jumeaux" />
+<Role filter="actor=237595" id="237595" role="EMT" tag="Eleanor Tata" />
+<Role filter="actor=237596" id="237596" role="Hog Farmer" tag="Lynn Hunter" thumb="https://metadata-static.plex.tv/people/5d7768a47e5fa10020bf3196.jpg" />
+<Role filter="actor=237597" id="237597" role="Tourist" tag="Cathleen Summers" />
+<Role filter="actor=237598" id="237598" role="Paleontologist" tag="Patrick Loungway" />
+<Role filter="actor=237599" id="237599" role="T-Bone Car Driver" tag="Michael Bendib" />
+<Role filter="actor=237600" id="237600" role="Sundar Kumar" tag="Ahir Shah" thumb="https://metadata-static.plex.tv/3/people/3be6e29f37dfc15abdf24775ee4f6832.jpg" />
+<User id="156614497" thumb="https://plex.tv/users/2e69a1aad34ce44b/avatar?c=1658638996" title="Back Porch" />
+<Session id="ehhp55gydi4u622lp9q4akh2" bandwidth="13274" location="lan" />
+<TranscodeSession key="/transcode/sessions/gtn1q10zyi9gmuhdqxmdfkq1" throttled="1" complete="0" progress="2.5" size="-22" speed="0" error="0" duration="8851360" context="streaming" sourceVideoCodec="h264" sourceAudioCodec="eac3" videoDecision="copy" audioDecision="transcode" protocol="dash" container="mp4" videoCodec="h264" audioCodec="aac" audioChannels="2" transcodeHwRequested="1" transcodeHwFullPipeline="0" timeStamp="1659670110.2410181" maxOffsetAvailable="219.46899999999997" minOffsetAvailable="0" />
+</Video>
+<Track addedAt="1578849547" art="/library/metadata/19199/art/1659581557" duration="226186" grandparentArt="/library/metadata/19199/art/1659581557" grandparentGuid="plex://artist/5d07bdb1403c640290610b41" grandparentKey="/library/metadata/19199" grandparentRatingKey="19199" grandparentThumb="/library/metadata/19199/thumb/1659581557" grandparentTitle="Alabama Shakes" guid="plex://track/5d07de79403c640290224868" index="1" key="/library/metadata/19217" librarySectionID="15" librarySectionKey="/library/sections/15" librarySectionTitle="Music" parentGuid="plex://album/5d07c64a403c640290afb635" parentIndex="1" parentKey="/library/metadata/19216" parentRatingKey="19216" parentStudio="Rough Trade" parentThumb="/library/metadata/19216/thumb/1656298242" parentTitle="Boys &amp; Girls" parentYear="2012" ratingCount="432338" ratingKey="19217" sessionKey="84" thumb="/library/metadata/19216/thumb/1656298242" title="Hold On" type="track" updatedAt="1658896029" viewOffset="59000">
+<Media id="35101" audioChannels="2" audioCodec="aac" bitrate="258" container="mp4" duration="226186" protocol="dash" selected="1">
+<Part id="81747" bitrate="258" container="mp4" duration="226186" decision="transcode" selected="1">
+<Stream albumGain="-10.47" albumPeak="0.995697" albumRange="9.022416" bitrate="258" bitrateMode="cbr" channels="2" codec="aac" default="1" displayTitle="ALAC (Stereo)" extendedDisplayTitle="ALAC (Stereo)" gain="-10.47" id="228723" loudness="-9.27" lra="6.68" peak="0.978180" selected="1" streamType="2" decision="transcode" location="segments-audio" />
+</Part>
+</Media>
+<Mood filter="mood=56819" id="56819" tag="Passionate" />
+<Mood filter="mood=56827" id="56827" tag="Cathartic" />
+<Mood filter="mood=72159" id="72159" tag="Majestic" />
+<Mood filter="mood=56977" id="56977" tag="Freewheeling" />
+<Mood filter="mood=57221" id="57221" tag="Rollicking" />
+<Mood filter="mood=56799" id="56799" tag="Bittersweet" />
+<Mood filter="mood=56979" id="56979" tag="Organic" />
+<Mood filter="mood=70466" id="70466" tag="Confessional" />
+<Mood filter="mood=58225" id="58225" tag="Flowing" />
+<Mood filter="mood=57320" id="57320" tag="Swaggering" />
+<User id="156614562" thumb="https://plex.tv/users/f76b3fcaad267dbf/avatar?c=1658639032" title="Living Room" />
+<Session id="dxtgg6ral4vi7p2dhnswibhi" bandwidth="271" location="lan" />
+<TranscodeSession key="/transcode/sessions/y0wiylvc79e2xmfsgdlff7p9" throttled="1" complete="1" progress="100" size="-22" speed="0" error="0" duration="226187" remaining="0" context="streaming" sourceAudioCodec="alac" audioDecision="transcode" protocol="dash" container="mp4" audioCodec="aac" audioChannels="2" transcodeHwRequested="1" transcodeHwFullPipeline="0" timeStamp="1659800674.2866516" maxOffsetAvailable="226.18666666666661" minOffsetAvailable="0" />
+</Track>
+</MediaContainer>
