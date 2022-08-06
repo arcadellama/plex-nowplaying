@@ -10,7 +10,7 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 - Fully POSIX-compliant out of the box
 - Tested on macOS, Debian, Ubuntu, Fedora, Slackware, and FreeBSD
 - Now works with a [PLEX AUTH TOKEN](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/)
-- Green indicator for hardware transcoding, Blue indicator for software transcoding
+- Green solid indicator for hardware transcoding, open indicator for software transcoding
 
 ### Dependencies
 - Just about any shell (sh, bash, zsh, fish, tcsh...)
