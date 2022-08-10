@@ -1,7 +1,7 @@
 # nowplaying.sh
 ### a pure sh POSIX script to print the "Plex Now Playing" status to stdout.
 
-![Image](/images/screenshot.png)
+![Image](/.github/images/screenshot.png)
 
 ### Purpose
 This started out as a quick way to make sure I didn't kick anyone off Plex before doing an update or server reboot. It has become a little bit of of a hobby project to learn more about how the shell works, including a built-in XML parser.
