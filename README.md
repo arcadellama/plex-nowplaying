@@ -13,7 +13,7 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 - Green solid indicator for hardware transcoding, open indicator for software transcoding
 
 ### Dependencies
-- Just about any shell (sh, bash, zsh, fish, tcsh...)
+- Just about any shell (sh, bash, ksh, dash)
 - curl, wget, or fetch (looks in that order)
 
 ### Installation
@@ -58,3 +58,4 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 - [x] Add transcoding indicator
 - [x] Remove the dependancy on grep, sed, cut, and tput
 - [x] Add colors, bold, italics, etc.
+- [ ] Add support for zsh
