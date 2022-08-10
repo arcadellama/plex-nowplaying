@@ -25,7 +25,7 @@
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="0.97"
+version="0.99"
 
 plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
@@ -76,21 +76,29 @@ Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 
       --version, -v   Show version
 
-             --curl   Force curl as downloader.
+      --curl <path>   Force curl as downloader.b
+                      (Path is optional.)
 
-             --wget   Force wget as downloader.
+      --wget <path>   Force wget as downloader.
+                      (Path is optional.)
 
-            --fetch   Force fetch as downloader.
+     --fetch <path>   Force fetch as downloader.
+                      (Path is optional.)
 
-             --file   Point to a local XML file for debugging
-
+             --file   Point to a XML file for debugging
 EOF
 }
 
 dependency_check() {
 
     if [ -n "$skip_checks" ]; then
-        return 0
+        if [ -x "$dl_agent" ]; then
+            return 0
+        else
+            printf "[%s]: Error. Cannot find a download agent.\n" "$prgnam"
+            printf "Is curl, wget, or fetch installed?\n"
+            return 1
+        fi
     fi
 
     if [ -x "$(command -v curl)" ]; then
@@ -430,7 +438,7 @@ main() {
                 max_width="$2"
                 shift 2 ;;
         --delim|-d)
-		printf "[%s]: --delim, -d is deprecated\n" "$prgnam"
+		        printf "[%s]: --delim, -d is deprecated\n" "$prgnam"
                 dot_leader="$2"
                 shift 2 ;;
          #--color)
@@ -440,21 +448,61 @@ main() {
                 plex_file="$2"
                 shift 2 ;;
         --force|-f)
-		printf "[%s]: --force is deprecated\n" "$prgnam"
+		        printf "[%s]: --force is deprecated\n" "$prgnam"
                 skip_checks=1
                 shift 1 ;;
             --curl)
-                dl_agent="$(command -v curl)"
-                skip_checks=1
-                shift 1 ;;
+                case "$2" in
+                    *curl)
+                        if [ -x "$2" ]; then
+                            dl_agent="$2"
+                            shift 2 
+                        else
+                            printf "[%s]: Error. Cannot find %s.\n" \
+                                "$prgnam" "$2"
+                            exit 1
+                        fi
+                        ;;
+                        *)
+                        dl_agent="$(command -v curl)"
+                        shift 1 ;;
+                esac
+                skip_checks=1 ;;
+
             --wget)
-                dl_agent="$(command -v wget)"
-                skip_checks=1
-                shift 1 ;;
+                case "$2" in
+                    *wget)
+                        if [ -x "$2" ]; then
+                            dl_agent="$2"
+                            shift 2 
+                        else
+                            printf "[%s]: Error. Cannot find %s.\n" \
+                                "$prgnam" "$2"
+                            exit 1
+                        fi
+                        ;;
+                        *)
+                        dl_agent="$(command -v wget)"
+                        shift 1 ;;
+                esac
+                skip_checks=1 ;;
            --fetch)
-                dl_agent="$(command -v fetch)"
-                skip_checks=1
-                shift 1 ;;
+                case "$2" in
+                    *fetch)
+                        if [ -x "$2" ]; then
+                            dl_agent="$2"
+                            shift 2 
+                        else
+                            printf "[%s]: Error. Cannot find %s.\n" \
+                                "$prgnam" "$2"
+                            exit 1
+                        fi
+                        ;;
+                        *)
+                        dl_agent="$(command -v fetch)"
+                        shift 1 ;;
+                esac
+                skip_checks=1 ;;
          --help|-h)
                 print_help
                 exit 0 ;;
