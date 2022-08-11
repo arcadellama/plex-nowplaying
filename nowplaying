@@ -27,9 +27,9 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="1.0"
+version="1.01"
 
-plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
+plex_host="127.0.0.1"           # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader.
 dl_agent=""                     # Either curl, wget, or fetch
@@ -68,7 +68,7 @@ Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
          
         --plex, -p    IP address(es) or domain name of Plex Server
                       separated by commas, no spaces.
-                      Default=localhost,127.0.0.1
+                      Default=127.0.0.1
 
         --token, -t   Plex Auth Token
 
@@ -448,9 +448,9 @@ main() {
          #--color)
          #     color="yes"
          #     shift 1 ;;
-           --debug)
-                debug="1"
-                shift 1 ;;
+         #  --debug)
+         #       debug="1"
+         #       shift 1 ;;
             --file)
                 plex_file="$2"
                 shift 2 ;;
