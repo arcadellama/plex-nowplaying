@@ -53,9 +53,10 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
                  --file   Point to a XML file for debugging
 ### Exit Codes
-- 0 It worked
-- 1 Something went wrong
-- 2 Nothing playing
+-   0     Everything works, something is playing
+-   1     Something went wrong
+-   2-99  Plex server unreachable/timeout
+-   222   Everything works, nothing playing 
 
 ### Roadmap
 - [x] Add PLEX AUTH TOKEN option for servers without local auth turned off
@@ -63,4 +64,4 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 - [x] Add transcoding indicator
 - [x] Remove the dependancy on grep, sed, cut, and tput
 - [x] Add colors, bold, italics, etc.
-- [ ] Fix exit codes
+- [x] Fix exit codes

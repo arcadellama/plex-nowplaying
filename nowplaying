@@ -23,9 +23,11 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+export LC_ALL=C
+
 ## Global Variables
 prgnam="nowplaying.sh"
-version="0.99"
+version="1.0"
 
 plex_host="localhost,127.0.0.1" # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
@@ -34,6 +36,7 @@ dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
+plexml=""                       # Holds the retrieved Plex XML Status
 # color=auto
 
 ## Text Color Definitions
@@ -288,18 +291,18 @@ session_url() {
 }
 
 download_session() {
-    __host="$1"
+    __url="$1"
     case "$dl_agent" in
         *curl)
-            "$dl_agent" -m 2 -s "$(session_url "$__host")"
-            return "$?" 
+            "$dl_agent" -m 2 -s "$__url"
+             return "$?"
             ;;
          *wget)
-            "$dl_agent" -T 2 -qO - "$(session_url "$__host")"
+            "$dl_agent" -T 2 -qO - "$__url"
             return "$?" 
             ;;
          *fetch)
-            "$dl_agent" -T 2 -qO - "$(session_url "$__host")"
+            "$dl_agent" -T 2 -qO - "$__url"
             return "$?" 
             ;;
         esac
@@ -316,11 +319,12 @@ get_plexml() {
     # shellcheck disable=2086
     set -- ${plex_host}
     for __host in "$@"; do
-        if download_session "$__host"; then
-            return "$?"
-        fi
+        __url="$(session_url "$__host")" 
+        download_session "$__url"
+        __retval="$?"
     done
     IFS=$oldIFS
+    return "$__retval"
 }
 
 parse_plexml() {
@@ -418,10 +422,10 @@ parse_plexml() {
        ;;
        esac
     done << EOF
-"$(get_plexml)"
+"$plexml"
 EOF
-if [ $__count -eq 0 ]; then
-    return 2
+if [ "$__count" -eq 0 ]; then
+    exit 222
 fi
 }
 
@@ -444,6 +448,9 @@ main() {
          #--color)
          #     color="yes"
          #     shift 1 ;;
+           --debug)
+                debug="1"
+                shift 1 ;;
             --file)
                 plex_file="$2"
                 shift 2 ;;
@@ -518,6 +525,7 @@ main() {
     done
 
     if dependency_check; then
+        plexml="$(get_plexml)" || exit "$?"
         parse_plexml
     fi
 }
