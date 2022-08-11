@@ -7,18 +7,22 @@
 This started out as a quick way to make sure I didn't kick anyone off Plex before doing an update or server reboot. It has become a little bit of of a hobby project to learn more about how the shell works, including a built-in XML parser.
 
 ### Features
-- Fully POSIX-compliant out of the box
+- Fully POSIX-compliant
 - Tested on macOS, Debian, Ubuntu, Fedora, Slackware, and FreeBSD
 - Now works with a [PLEX AUTH TOKEN](https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/)
 - Green solid indicator for hardware transcoding, open indicator for software transcoding
 
 ### Dependencies
-- Just about any shell (sh, bash, ksh, dash)
-- curl, wget, or fetch (looks in that order)
+- A posix compatible shell (sh, bash, ksh, dash)
+- curl, wget, or fetch
 
 ### Installation
-Simply clone and copy the script it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
-See "Usage" below for more options.
+Clone this repo:
+
+    git clone git@github.com:arcadellama/nowplaying.sh
+
+Copy or link the script "nowplaying" it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
+See "Configuration" below for more options.
 
 I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
