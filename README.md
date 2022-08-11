@@ -24,29 +24,30 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
 ### Configuration
 
-    Example: nowplaying -p 192.168.1.1 --token <PLEX_AUTH_TOKEN> 
-            
-        --plex, -p    IP address(es) or domain name of Plex Server
-                      separated by commas, no spaces.
-                      Default=localhost,127.0.0.1
+    Example: nowplaying -p 192.168.1.1 --token <PLEX_AUTH_TOKEN>          
+            --plex, -p    IP address(es) or domain name of Plex Server
+                          separated by commas, no spaces.
+                          Default=localhost,127.0.0.1
 
-        --token, -t   Plex Auth Token
+            --token, -t   Plex Auth Token
 
-        --width, -w   Maximum number of columns width.
-                      Default=0, "infinite"
+            --width, -w   Maximum number of columns width.
+                          Default=0, "infinite"
 
-         --help, -h   This screen
+             --help, -h   This screen
 
-      --version, -v   Show version
+          --version, -v   Show version
 
-             --curl   Force curl as downloader.
+          --curl <path>   Force curl as downloader.b
+                          (Path is optional.)
 
-             --wget   Force wget as downloader.
+          --wget <path>   Force wget as downloader.
+                          (Path is optional.)
 
-            --fetch   Force fetch as downloader.
+         --fetch <path>   Force fetch as downloader.
+                          (Path is optional.)
 
-             --file   Point to a local XML file for debugging
-
+                 --file   Point to a XML file for debugging
 ### Exit Codes
 - 0 It worked
 - 1 Something went wrong
