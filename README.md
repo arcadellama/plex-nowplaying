@@ -45,7 +45,7 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
           --version, -v   Show version
 
-          --curl <path>   Force curl as downloader.b
+          --curl <path>   Force curl as downloader.
                           (Path is optional.)
 
           --wget <path>   Force wget as downloader.
