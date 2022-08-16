@@ -329,86 +329,60 @@ get_plexml() {
     return "$__retval"
 }
 
+get_item() {
+    __item="$1"
+    __line="$2"
+    set -f
+    oldIFS=$IFS
+    IFS='"'
+    # shellcheck disable=2086
+    set -- ${__line}
+    while [ "$#" -gt 0 ]; do
+        case "${1## }" in
+            "$__item"=)
+                printf "%s\n" "$2"
+                shift 2 ;;
+            *)
+                shift ;;
+        esac
+    done
+    IFS=$oldIFS
+    set +f
+}
+
 parse_plexml() {
     __title=""
     __user=""
     __album=""
     __type=""
     __transcode=""
+
     __transcode_symbol=""
+    __trans_type=""
     __count=0
 
     # get_plexml -->
     while IFS= read -r line; do
         case "$line" in
             ?Video*|?Track*)
-                # Check for type, album, title
-                set -f
-	            oldIFS=$IFS
-	            IFS='"'
-	            # shellcheck disable=2086
-                set -- ${line}
-                while [ "$#" -gt 0 ]; do
-                    case "${1## }" in
-                        type=)
-                            __type="$2"
-                            shift 2 ;;
-                        grandparentTitle=)
-                            __album="$2"
-                            shift 2 ;;
-                        title=)
-                           __title="$2"
-                           shift 2 ;;
-                            *)
-                           shift ;;
-                    esac
-                done
-                IFS=$oldIFS
-                set +f
+                __type="$(get_item "type" "$line")"
+                __album="$(get_item "grandparentTitle" "$line")"
+                __title="$(get_item "title" "$line")"
                 ;;
 
             *User\ id*)
-                set -f
-                oldIFS=$IFS
-                IFS='"'
-                # shellcheck disable=2086
-                set -- ${line}
-                while [ "$#" -gt 0 ]; do
-                    case "${1## }" in
-                        title=)
-                            __user="$2"
-                            shift 2 ;;
-                        *)
-                            shift ;;
-                    esac
-                done
-                IFS=$oldIFS
-                set +f
+                __user="$(get_item "title" "$line")"
                 ;;
 
             *TranscodeSession*)
-                set -f
-                oldIFS=$IFS
-                IFS='"'
-                # shellcheck disable=2086
-                set -- ${line}
-                while [ "$#" -gt 0 ]; do
-                    case "${1## }" in
-                        transcodeHwFullPipeline=)
-                            if [ "$2" = 1 ]; then
-                                __transcode_symbol="$hw_transcode_symbol"
-                            else
-                                __transcode_symbol="$sw_transcode_symbol"
-                            fi
-                             __transcode="$(printf "%b%s%b" \
-                              "$green" "$__transcode_symbol" "$treset")"
-                            shift 2 ;;
-                        *)
-                            shift ;;
-                    esac
-                done
-                IFS=$oldIFS
-                set +f
+                __trans_type=$(get_item "transcodeHwFullPipeline" "$line")
+                if [ "$__trans_type" -eq 1 ]; then
+                    __transcode_symbol="$hw_transcode_symbol"
+                else
+                    __transcode_symbol="$sw_transcode_symbol"
+                fi
+                __transcode="$(printf "%b%s%b" \
+                    "$green" "$__transcode_symbol" "$treset")"
                 ;;
 
             */Video*|*/Track*)
