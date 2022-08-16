@@ -39,6 +39,7 @@ skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
 plexml=""                       # Holds the retrieved Plex XML Status
+verbose=""                      # Chatty version
 # color=auto
 
 ## Text Color Definitions
@@ -399,8 +400,8 @@ parse_plexml() {
 "$plexml"
 EOF
 
-     if [ "$__count" -eq 0 ]; then
-         exit 222
+     if [ -n "$verbose" ] && [ "$__count" -eq 0 ]; then
+         printf "Nothing playing on Plex.\n"
      fi
 }
 
@@ -485,6 +486,9 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
+         --verbose)
+                verbose="1"
+                shift 1 ;;
          --help|-h)
                 print_help
                 exit 0 ;;
