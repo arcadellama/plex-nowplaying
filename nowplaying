@@ -411,23 +411,23 @@ parse_plexml() {
                 set +f
                 ;;
 
-      */Video*|*/Track*)
-       if [ "$__count" -eq 0 ]; then
-           printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
-	   __count="$((__count+1))"
-       fi
-       print_nowplaying "$__count" "$__album" \
-           "$__title" "$__user" "$__type" "$__transcode"
-        __count="$((__count+1))"
-       continue
-       ;;
-       esac
+            */Video*|*/Track*)
+                if [ "$__count" -eq 0 ]; then
+                    printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
+                    __count="$((__count+1))"
+                fi
+                print_nowplaying "$__count" "$__album" \
+                    "$__title" "$__user" "$__type" "$__transcode"
+                __count="$((__count+1))"
+                ;;
+        esac
     done << EOF
 "$plexml"
 EOF
-if [ "$__count" -eq 0 ]; then
-    exit 222
-fi
+
+     if [ "$__count" -eq 0 ]; then
+         exit 222
+     fi
 }
 
 main() {
