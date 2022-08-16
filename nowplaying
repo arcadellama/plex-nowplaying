@@ -131,6 +131,27 @@ dependency_check() {
 
 }
 
+get_item() {
+    __item="$1"
+    __line="$2"
+    set -f
+    oldIFS=$IFS
+    IFS='"'
+    # shellcheck disable=2086
+    set -- ${__line}
+    while [ "$#" -gt 0 ]; do
+        case "${1## }" in
+            "$__item"=)
+                printf "%s\n" "$2"
+                shift 2 ;;
+            *)
+                shift ;;
+        esac
+    done
+    IFS=$oldIFS
+    set +f
+}
+
 truncate_string() {
     __string="$1"
     __width="$2"
@@ -162,11 +183,12 @@ fix_apostrophe() {
     set -- ${__input}
     case "$2" in
         \#39\;*)
-	IFS=$__oldIFS
-	printf "%s'%s" "$1" "${2##\#39\;}"
-	;;
-	*)
-	printf "%s" "$1"
+            IFS=$__oldIFS
+            printf "%s'%s" "$1" "${2##\#39\;}"
+            ;;
+              *)
+            printf "%s" "$1"
+            ;;
     esac
 }
 	
@@ -317,7 +339,6 @@ get_plexml() {
     fi
     oldIFS=$IFS
     IFS=,
-    # we are intentionally word-splitting
     # shellcheck disable=2086
     set -- ${plex_host}
     for __host in "$@"; do
@@ -327,27 +348,6 @@ get_plexml() {
     done
     IFS=$oldIFS
     return "$__retval"
-}
-
-get_item() {
-    __item="$1"
-    __line="$2"
-    set -f
-    oldIFS=$IFS
-    IFS='"'
-    # shellcheck disable=2086
-    set -- ${__line}
-    while [ "$#" -gt 0 ]; do
-        case "${1## }" in
-            "$__item"=)
-                printf "%s\n" "$2"
-                shift 2 ;;
-            *)
-                shift ;;
-        esac
-    done
-    IFS=$oldIFS
-    set +f
 }
 
 parse_plexml() {
