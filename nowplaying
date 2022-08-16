@@ -90,6 +90,8 @@ Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 
      --fetch <path>   Force fetch as downloader.
                       (Path is optional.)
+ 
+          --verbose   Print every error message.
 
              --file   Point to a XML file for debugging
 EOF
@@ -130,6 +132,15 @@ dependency_check() {
 #            unset "$color" ;;
 #    esac
 
+}
+
+error_exit() {
+    __ret="$1"
+    if [ -n "$verbose" ]; then
+        printf "Plex server not not found at %s. (Error code: %s)\n"\
+            "$plex_host" "$__ret"
+    fi
+    exit "$__ret"
 }
 
 get_item() {
@@ -504,7 +515,7 @@ main() {
     done
 
     if dependency_check; then
-        plexml="$(get_plexml)" || exit "$?"
+        plexml="$(get_plexml)" || error_exit "$?"
         parse_plexml
     fi
 }
