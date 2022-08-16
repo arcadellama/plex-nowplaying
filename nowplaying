@@ -32,6 +32,8 @@ version="1.01"
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader.
+hw_transcode_symbol="•"         # Symbol to show hardware transcode
+sw_transcode_symbol="◦"         # Symbol to show software transcode
 dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
@@ -333,82 +335,81 @@ parse_plexml() {
     __album=""
     __type=""
     __transcode=""
+    __transcode_symbol=""
     __count=0
+
+    # get_plexml -->
     while IFS= read -r line; do
-	case "$line" in
-	?Video*|?Track*)
-	set -f
-	oldIFS=$IFS
-	IFS='"'
-	# shellcheck disable=2086
-	set -- ${line}
-	while [ "$#" -gt 0 ]; do
-	    case "${1## }" in
-	        type=)
-		    __type="$2"
-		    shift 2 ;;
-		grandparentTitle=)
-		    __album="$2"
-		    shift 2 ;;
-		title=)
-		    __title="$2"
-		    shift 2 ;;
-		    *)
-		    shift ;;
-	    esac
-		    
-	done
-	IFS=$oldIFS
-	set +f
-	continue
-	;;
+        case "$line" in
+            ?Video*|?Track*)
+                # Check for type, album, title
+                set -f
+	            oldIFS=$IFS
+	            IFS='"'
+	            # shellcheck disable=2086
+                set -- ${line}
+                while [ "$#" -gt 0 ]; do
+                    case "${1## }" in
+                        type=)
+                            __type="$2"
+                            shift 2 ;;
+                        grandparentTitle=)
+                            __album="$2"
+                            shift 2 ;;
+                        title=)
+                           __title="$2"
+                           shift 2 ;;
+                            *)
+                           shift ;;
+                    esac
+                done
+                IFS=$oldIFS
+                set +f
+                ;;
 
             *User\ id*)
-                #__user="$(get_element "title" "$line")"
-	set -f
-	oldIFS=$IFS
-	IFS='"'
-	# shellcheck disable=2086
-	set -- ${line}
-	while [ "$#" -gt 0 ]; do
-	    case "${1## }" in
-	        title=)
-		    __user="$2"
-		    shift 2 ;;
-		    *)
-		    shift ;;
-	    esac
-	done
-	IFS=$oldIFS
-	set +f
-	continue
-	;;
-                #continue ;;
+                set -f
+                oldIFS=$IFS
+                IFS='"'
+                # shellcheck disable=2086
+                set -- ${line}
+                while [ "$#" -gt 0 ]; do
+                    case "${1## }" in
+                        title=)
+                            __user="$2"
+                            shift 2 ;;
+                        *)
+                            shift ;;
+                    esac
+                done
+                IFS=$oldIFS
+                set +f
+                ;;
 
-    *TranscodeSession*)
-	set -f
-	oldIFS=$IFS
-	IFS='"'
-	# shellcheck disable=2086
-	set -- ${line}
-	while [ "$#" -gt 0 ]; do
-	    case "${1## }" in
-	        transcodeHwFullPipeline=)
-		    if [ "$2" = 1 ]; then
-                        __transcode="$(printf "%b•%b" "$green" "$treset")"
-                    else
-                        __transcode="$(printf "%b◦%b" "$green" "$treset")"
-                    fi
-		    shift 2 ;;
-		    *)
-		    shift ;;
-	    esac
-	done
-	IFS=$oldIFS
-	set +f
-	continue
-	;;
-        #        continue ;;
+            *TranscodeSession*)
+                set -f
+                oldIFS=$IFS
+                IFS='"'
+                # shellcheck disable=2086
+                set -- ${line}
+                while [ "$#" -gt 0 ]; do
+                    case "${1## }" in
+                        transcodeHwFullPipeline=)
+                            if [ "$2" = 1 ]; then
+                                __transcode_symbol="$hw_transcode_symbol"
+                            else
+                                __transcode_symbol="$sw_transcode_symbol"
+                            fi
+                             __transcode="$(printf "%b%s%b" \
+                              "$green" "$__transcode_symbol" "$treset")"
+                            shift 2 ;;
+                        *)
+                            shift ;;
+                    esac
+                done
+                IFS=$oldIFS
+                set +f
+                ;;
 
       */Video*|*/Track*)
        if [ "$__count" -eq 0 ]; then
