@@ -27,7 +27,7 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="1.01"
+version="1.02"
 
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
