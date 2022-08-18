@@ -1,6 +1,6 @@
 # plex-nowplaying
 
-### a pure sh POSIX script to print the "Plex Now Playing" status to stdout.
+### A CLI script to show the "Plex Now Playing" status in your terminal.
 
 ![Image](/.github/images/nowplaying-screenshot.png)
 
