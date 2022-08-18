@@ -29,7 +29,7 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="nowplaying"
-version="1.11"
+version="1.1.2"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
@@ -66,7 +66,6 @@ underline="\033[4m"
 treset="\033[m"
 
 ## Color Output Options
-## todo: perhaps a config file for these?
 movie_color="$blue"
 episode_color="$cyan"
 song_color="$magenta"
@@ -501,9 +500,8 @@ main() {
                         color="$2" 
                         shift 2 ;;
                     *)
-		                printf "[%s]: Error." "$prgnam"
-                        printf " --color args allowed are on, off, auto.\n"
-                        exit 1 ;;
+                        color="on"
+                        shift 1 ;;
                 esac
                 ;;
             --file)
@@ -568,10 +566,10 @@ main() {
          --verbose)
                 verbose="1"
                 shift 1 ;;
-         --help|-h)
+         *help|-h)
                 print_help
                 exit 0 ;;
-      --version|-v)
+      *version|-v)
                 printf "%s: %s\n" "$prgnam" "$version"
                 exit 0 ;;
                  *)
