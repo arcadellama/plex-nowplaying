@@ -29,7 +29,7 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="nowplaying"
-version="1.1.2"
+version="1.1.3"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
@@ -46,6 +46,7 @@ plex_token=""                   # Auth token for Plex
 hw_transcode_symbol="•"         # Symbol to show hardware transcode
 sw_transcode_symbol="◦"         # Symbol to show software transcode
 plexml=""                       # The active Plex XML Status
+session=0
 
 ## Text Color Definitions
 black="\033[30m"
@@ -112,13 +113,12 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 EOF
 }
 
-error_exit() {
+no_server_error() {
     __ret="$1"
     if [ -n "$verbose" ]; then
         printf "Plex server not not found at %s. (Error code: %s)\n"\
             "$plex_host" "$__ret"
     fi
-    exit "$__ret"
 }
 
 dependency_check() {
@@ -239,6 +239,56 @@ fix_apostrophe() {
     esac
 }
 	
+
+session_url() {
+    __host="$1"
+    if [ -n "$plex_token" ]; then
+        printf "http://%s:32400/status/sessions?X-Plex-Token=%s" \
+            "$__host" "$plex_token"
+    else
+        printf "http://%s:32400/status/sessions" \
+            "$__host"
+    fi
+}
+
+download_session() {
+    __url="$1"
+    case "$dl_agent" in
+        *curl)
+            "$dl_agent" -m 2 -s "$__url"
+             return "$?"
+            ;;
+         *wget)
+            "$dl_agent" -T 2 -qO - "$__url"
+            return "$?" 
+            ;;
+         *fetch)
+            "$dl_agent" -T 2 -qO - "$__url"
+            return "$?" 
+            ;;
+        esac
+}
+
+get_plexml() {
+    __retval=""
+
+    if [ -n "$plex_file" ]; then
+        cat "$plex_file"
+        return
+    fi
+    IFS=,
+    # shellcheck disable=2086
+    set -- ${plex_host}
+    for __host in "$@"; do
+        __url="$(session_url "$__host")" 
+        if download_session "$__url"; then
+            return
+        else
+        __retval="$?"
+        fi
+    done
+    return "$__retval"
+}
 print_nowplaying() {
     __number="$1"
     __album="$(fix_apostrophe "$2")"
@@ -365,53 +415,6 @@ print_nowplaying() {
     printf "%s\n" "$__output"
 }
 
-session_url() {
-    __host="$1"
-    if [ -n "$plex_token" ]; then
-        printf "http://%s:32400/status/sessions?X-Plex-Token=%s" \
-            "$__host" "$plex_token"
-    else
-        printf "http://%s:32400/status/sessions" \
-            "$__host"
-    fi
-}
-
-download_session() {
-    __url="$1"
-    case "$dl_agent" in
-        *curl)
-            "$dl_agent" -m 2 -s "$__url"
-             return "$?"
-            ;;
-         *wget)
-            "$dl_agent" -T 2 -qO - "$__url"
-            return "$?" 
-            ;;
-         *fetch)
-            "$dl_agent" -T 2 -qO - "$__url"
-            return "$?" 
-            ;;
-        esac
-}
-
-get_plexml() {
-    if [ -n "$plex_file" ]; then
-        cat "$plex_file"
-        return
-    fi
-    oldIFS=$IFS
-    IFS=,
-    # shellcheck disable=2086
-    set -- ${plex_host}
-    for __host in "$@"; do
-        __url="$(session_url "$__host")" 
-        download_session "$__url"
-        __retval="$?"
-    done
-    IFS=$oldIFS
-    return "$__retval"
-}
-
 parse_plexml() {
     __title=""
     __user=""
@@ -435,6 +438,7 @@ parse_plexml() {
 
             *User\ id*)
                 __user="$(get_item "title" "$line")"
+                session="$((session+1))"
                 ;;
 
             *TranscodeSession*)
@@ -450,7 +454,8 @@ parse_plexml() {
             */Video*|*/Track*)
                 # Check if this is the first item
                 if [ "$__count" -eq 0 ]; then
-                    printf "\n"
+                        printf "\n"
+
                     if color_check; then
                         __welcome_msg="$(set_color \
                             "$__welcome_msg" "$white" "$italic" "$bold")"
@@ -466,7 +471,9 @@ parse_plexml() {
                 ;;
             */MediaContainer*)
                 # Check if end of xml file
-                printf "\n"
+                if [ "$session" -gt 0 ]; then
+                    printf "\n"
+                fi
                 ;;
         esac
     done << EOF
@@ -581,9 +588,11 @@ main() {
     done
 
     if dependency_check; then
-        plexml="$(get_plexml)" || error_exit "$?"
-        parse_plexml
+        if plexml="$(get_plexml)"; then
+            parse_plexml
+        else
+            no_server_error "$?"
+        fi
     fi
 }
-
 main "$@"
