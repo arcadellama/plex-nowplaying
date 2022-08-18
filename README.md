@@ -44,6 +44,10 @@ I have put it in my .bashrc for the screenshot seen above.
 
        --color <on|off>   Color setting. Default is to attempt to discover
                           your terminal settings and set accordingly.
+                          
+              --verbose   Print every error message.
+              
+                 --file   Point to a XML file for debugging
 
              --help, -h   This screen
 
@@ -57,14 +61,13 @@ I have put it in my .bashrc for the screenshot seen above.
 
          --fetch <path>   Force fetch as downloader.
                           (Path is optional.)
- 
-              --verbose   Print every error message.
-
-                 --file   Point to a XML file for debugging
 
 
 ### Why can you add more than one Plex host?
 This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.
+
+### What does verbose do?
+By default, the script will only show a result if it finds a Plex server with media playing. 'Verbose' mode will tell you why nothing was printed on screen, either because your Plex server has nothing playing, or because it can't be reached.
 
 ### Exit Codes
 -   0     Everything works
