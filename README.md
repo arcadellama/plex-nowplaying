@@ -2,7 +2,7 @@
 
 ### a pure sh POSIX script to print the "Plex Now Playing" status to stdout.
 
-![Image](/.github/images/screenshot.png)
+![Image](/.github/images/nowplaying-screenshot.png)
 
 [![GitHub Super-Linter](https://github.com/arcadellama/nowplaying.sh/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
