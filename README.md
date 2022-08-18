@@ -62,6 +62,10 @@ I have put it in my .bashrc for the screenshot seen above.
 
                  --file   Point to a XML file for debugging
 
+
+### Why can you add more than one Plex host?
+This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.
+
 ### Exit Codes
 -   0     Everything works
 -   1     Something went wrong
