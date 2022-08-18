@@ -39,7 +39,7 @@ skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
 plexml=""                       # Holds the retrieved Plex XML Status
-color="auto"                    # Toggle color output
+color=""                        # Toggle color output--default is "auto"
 verbose=""                      # Chatty version
 
 ## Text Color Definitions
@@ -77,6 +77,9 @@ Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
+
+   --color <on|off>   Color setting. Default is to attempt to discover
+                      your terminal settings and set accordingly.
 
          --help, -h   This screen
 
