@@ -22,7 +22,7 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 ### Installation
 Clone this repo:
 
-    git clone git@github.com:arcadellama/nowplaying.sh
+    git clone git@github.com:arcadellama/plex-nowplaying.git
 
 Copy or link the script "nowplaying" it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
 See "Configuration" below for more options.
