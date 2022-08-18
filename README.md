@@ -27,7 +27,7 @@ Clone this repo:
 Copy or link the script "nowplaying" it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
 See "Configuration" below for more options.
 
-I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
+I have put it in my .bashrc for the screenshot seen above.
 
 ### Configuration
 
