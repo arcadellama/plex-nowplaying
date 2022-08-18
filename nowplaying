@@ -27,7 +27,7 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="nowplaying.sh"
-version="1.02"
+version="1.10"
 
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
 max_width="0"                   # Set the maximum width of print; 0=infinite
@@ -43,21 +43,28 @@ color=""                        # Toggle color output--default is "auto"
 verbose=""                      # Chatty version
 
 ## Text Color Definitions
-# black="\033[30m"
-# red="\033[31m"
+black="\033[30m"
+red="\033[31m"
 green="\033[32m"
-# yellow="\033[33m"
-# blue="\033[34m"
-# magenta="\033[35m"
-# cyan="\033[36m"
-# white="\033[37m"
-# 
+yellow="\033[33m"
+blue="\033[34m"
+magenta="\033[35m"
+cyan="\033[36m"
+white="\033[37m"
+ 
 # ## Text Effect Definitions
-bold="\033[1m"
-# italic="\033[3m"
-# underline="\033[4m"
-# 
 treset="\033[m"
+bold="\033[1m"
+italic="\033[3m"
+underline="\033[4m"
+
+## Color Output Options
+## todo: perhaps a config file for these?
+
+movie_color="$blue"
+episode_color="$cyan"
+song_color="$magenta"
+transcode_color="$green"
 
 ## Functions
 print_help() {
@@ -100,8 +107,16 @@ Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 EOF
 }
 
-dependency_check() {
+error_exit() {
+    __ret="$1"
+    if [ -n "$verbose" ]; then
+        printf "Plex server not not found at %s. (Error code: %s)\n"\
+            "$plex_host" "$__ret"
+    fi
+    exit "$__ret"
+}
 
+dependency_check() {
     if [ -n "$skip_checks" ]; then
         if [ -x "$dl_agent" ]; then
             return 0
@@ -126,24 +141,33 @@ dependency_check() {
         exit 1
     fi
 
-#    case "$color" in
-#        true|yes)
-#            color=true ;;
-#        auto)
-#            [ "$(tput colors)" ] || unset "$color" ;;
-#        *)
-#            unset "$color" ;;
-#    esac
-
 }
 
-error_exit() {
-    __ret="$1"
-    if [ -n "$verbose" ]; then
-        printf "Plex server not not found at %s. (Error code: %s)\n"\
-            "$plex_host" "$__ret"
+color_check() {
+    case "$color" in
+        true|yes|on)
+            return 0 ;;
+       false|off|no)
+            return 1 ;;
+                  *)
+            if [ -x "$(command -v tput)" ]; then
+                if [ "$(tput colors)" ]; then
+                    return 0
+                fi
+            fi
+            return 1 ;;
+    esac
+}
+
+set_color() {
+    __item="$1"
+    __color="$2"
+    __effect="$3"
+    if [ -n "$3" ]; then
+        printf "%b%b%s%b" "$__effect" "$__color" "$__item" "$treset"
+    else
+        printf "%b%s%b" "$__color" "$__item" "$treset"
     fi
-    exit "$__ret"
 }
 
 get_item() {
@@ -208,7 +232,7 @@ fix_apostrophe() {
 }
 	
 print_nowplaying() {
-    __count="$1"
+    __number="$1"
     __album="$(fix_apostrophe "$2")"
     __title="$(fix_apostrophe "$3")"
     __track="$__title"
@@ -220,21 +244,25 @@ print_nowplaying() {
     # Set column width
     if [ "$(command -v tput)" ]; then
 	__columns="$("$(command -v tput)" cols)"
-	if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
-	    __columns="$max_width"
-	fi
+        if [ "$max_width" -ne 0 ] && [ "$__columns" -gt "$max_width" ]; then
+	        __columns="$max_width"
+	    fi
     else
-	if [ "$max_width" -ne 0 ]; then
-	    __columns="$max_width"
-	else
-	    __columns="80"
-	fi
+        if [ "$max_width" -ne 0 ]; then
+            __columns="$max_width"
+        else
+            __columns="80"
+        fi
     fi
 
     __col1="$((${#__count} + 1))"
     __col3="$((${#__user} + 1))"
     __col2="$((__columns - (__col3 + __col1) - 4))"
 
+    # Set global color
+    if color_check; then
+        __transcode="$(set_color "$__transcode" "$transcode_color" "$bold")"
+    fi
 
     case "$__type" in
         episode)
@@ -254,30 +282,27 @@ print_nowplaying() {
 
                   __album="${__album}:"
 
-                  # Line 1
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." "$__album" "" 
-                  # Line 2
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                __output="$(printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__number." "$__album" "";  
+                      printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "" "$__track $(print_delim ${#__track} ${__col2})" \
-                      "$__user $__transcode"
+                      "$__user $__transcode")"
                else
 
                 # Otherwise everything on one line
-                printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." \
+                __output="$(printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__number." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$__user $__transcode"
+                  "$__user $__transcode")"
 
-#               printf "%${__col1}s %-${__col2}s%${__col3}s%b\n" \
-#                   "$__count." \
-#                   "$__title $(print_delim ${#__title} ${__col2})" \
-#                   "$__user $__transcode"
+              fi
+              if color_check; then
+                __output="$(set_color "$__output" "$episode_color" "$bold")"
               fi
             ;;
 
           track)
-              # Music tracks
+              # Song tracks
               __title="${__album}: ${__track}"
 
               # If it doesn't fit, spread over two lines
@@ -291,38 +316,45 @@ print_nowplaying() {
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
 
-		  __album="${__album}:"
+		          __album="${__album}:"
 
-                  # Line 1
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." "$__album" ""
-                  # Line 2
+               # 2 lines
+                __output="$(printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__number." "$__album" "";
                   printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "" "$__track $(print_delim ${#__track} ${__col2})" \
-                      "$__user $__transcode" 
+                      "$__user $__transcode")"
                 else
 
-                    # All on one line
-                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$__count." \
+                # All on one line
+                __output="$(printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__number." \
                       "$__title $(print_delim ${#__title} ${__col2})" \
-                      "$__user $__transcode"
+                      "$__user $__transcode")"
 
+              fi
+              if color_check; then
+                __output="$(set_color "$__output" "$song_color" "$bold")"
               fi
             ;;
 
           movie)
               # Movies
-              # Simpler, always on one line, truncated if needed
+
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
-              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
-                  "$__count." \
+              __output="$(printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__number." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$__user $__transcode" 
+                  "$__user $__transcode")"
+              if color_check; then
+                __output="$(set_color "$__output" "$movie_color" "$bold")"
+              fi
             ;;
     esac
+    # Final print to screen
+    printf "%s\n" "$__output"
 }
 
 session_url() {
@@ -403,22 +435,30 @@ parse_plexml() {
                 else
                     __transcode_symbol="$sw_transcode_symbol"
                 fi
-                __transcode="$(printf "%b%s%b" \
-                    "$green" "$__transcode_symbol" "$treset")"
+                __transcode="$__transcode_symbol"
                 ;;
 
             */Video*|*/Track*)
+                # Check if this is the first item
                 if [ "$__count" -eq 0 ]; then
-                    printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
+                    printf "\n"
+                    if color_check; then
+                        printf "%bNow Playing on Plex:%b\n" \
+                            "$bold" "$treset"
+                    else
+                        printf "Now playing on Plex:\n"
+                    fi
                     __count="$((__count+1))"
                 fi
-                
+
                 ###### Print to screen! #####
-                printf "%b%s%b\n" \
-                    "$bold" "$(print_nowplaying "$__count" "$__album" "$__title" "$__user" "$__type" "$__transcode")" "$treset"
-                #print_nowplaying "$__count" "$__album" \
-                #    "$__title" "$__user" "$__type" "$__transcode"
+                print_nowplaying "$__count" "$__album" \
+                    "$__title" "$__user" "$__type" "$__transcode"
                 __count="$((__count+1))"
+                ;;
+            */MediaContainer*)
+                # Check if end of xml file
+                printf "\n"
                 ;;
         esac
     done << EOF
@@ -447,8 +487,16 @@ main() {
                 dot_leader="$2"
                 shift 2 ;;
            --color)
-              color="1"
-              shift 1 ;;
+                case "$2" in
+                    on|off|auto|true|false|yes|no)
+                        color="$2" 
+                        shift 2 ;;
+                    *)
+		                printf "[%s]: Error." "$prgnam"
+                        printf " --color args allowed are on, off, auto.\n"
+                        exit 1 ;;
+                esac
+                ;;
             --file)
                 plex_file="$2"
                 shift 2 ;;
