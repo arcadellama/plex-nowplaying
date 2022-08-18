@@ -39,8 +39,8 @@ skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
 plexml=""                       # Holds the retrieved Plex XML Status
+color="auto"                    # Toggle color output
 verbose=""                      # Chatty version
-# color=auto
 
 ## Text Color Definitions
 # black="\033[30m"
@@ -182,7 +182,7 @@ print_delim() {
     __width="$2"
     __count=$((__width - __word))
     while [ "$__count" -gt 0 ]; do
-        printf "%b%s" "$treset" "$dot_leader"
+        printf "%s" "$dot_leader"
         __count=$((__count - 1))
     done
 }
@@ -248,21 +248,28 @@ print_nowplaying() {
                   if [ "${#__track}" -gt "$__col2" ]; then
                   __track="$(truncate_string "$__track" "$__col2")"
                   fi
-		  __album="${__album}:"
+
+                  __album="${__album}:"
+
                   # Line 1
-                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$bold" "$__count." "$__album" "" 
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__count." "$__album" "" 
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "" "$__track $(print_delim ${#__track} ${__col2})" \
-                      "$bold" "$__user $__transcode" "$treset"
-                else
+                      "$__user $__transcode"
+               else
 
                 # Otherwise everything on one line
-              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
-                  "$bold" "$__count." \
+                printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user $__transcode" "$treset"
+                  "$__user $__transcode"
+
+#               printf "%${__col1}s %-${__col2}s%${__col3}s%b\n" \
+#                   "$__count." \
+#                   "$__title $(print_delim ${#__title} ${__col2})" \
+#                   "$__user $__transcode"
               fi
             ;;
 
@@ -284,19 +291,19 @@ print_nowplaying() {
 		  __album="${__album}:"
 
                   # Line 1
-                  printf "%b%${__col1}s %-${__col2}s%${__col3}s\n" \
-                      "$bold" "$__count." "$__album" ""
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__count." "$__album" ""
                   # Line 2
-                  printf "%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
                       "" "$__track $(print_delim ${#__track} ${__col2})" \
-                      "$bold" "$__user $__transcode" "$treset"
+                      "$__user $__transcode" 
                 else
 
                     # All on one line
-                  printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
-		      "$bold" "$__count." \
+                  printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                      "$__count." \
                       "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user $__transcode" "$treset"
+                      "$__user $__transcode"
 
               fi
             ;;
@@ -307,10 +314,10 @@ print_nowplaying() {
               if [ "${#__title}" -gt "$__col2" ]; then
                   __title="$(truncate_string "$__title" "$__col2")"
               fi
-              printf "%b%${__col1}s %-${__col2}s%b%${__col3}s%b\n" \
-                  "$bold" "$__count." \
+              printf "%${__col1}s %-${__col2}s%${__col3}s\n" \
+                  "$__count." \
                   "$__title $(print_delim ${#__title} ${__col2})" \
-                  "$bold" "$__user $__transcode" "$treset" 
+                  "$__user $__transcode" 
             ;;
     esac
 }
@@ -402,8 +409,12 @@ parse_plexml() {
                     printf "%bNow Playing on Plex:%b\n" "$bold" "$treset"
                     __count="$((__count+1))"
                 fi
-                print_nowplaying "$__count" "$__album" \
-                    "$__title" "$__user" "$__type" "$__transcode"
+                
+                ###### Print to screen! #####
+                printf "%b%s%b\n" \
+                    "$bold" "$(print_nowplaying "$__count" "$__album" "$__title" "$__user" "$__type" "$__transcode")" "$treset"
+                #print_nowplaying "$__count" "$__album" \
+                #    "$__title" "$__user" "$__type" "$__transcode"
                 __count="$((__count+1))"
                 ;;
         esac
@@ -432,12 +443,9 @@ main() {
 		        printf "[%s]: --delim, -d is deprecated\n" "$prgnam"
                 dot_leader="$2"
                 shift 2 ;;
-         #--color)
-         #     color="yes"
-         #     shift 1 ;;
-         #  --debug)
-         #       debug="1"
-         #       shift 1 ;;
+           --color)
+              color="1"
+              shift 1 ;;
             --file)
                 plex_file="$2"
                 shift 2 ;;
