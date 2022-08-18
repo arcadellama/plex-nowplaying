@@ -570,7 +570,7 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
-         --verbose)
+         *verbose)
                 verbose="1"
                 shift 1 ;;
          *help|-h)
