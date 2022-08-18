@@ -31,7 +31,7 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
 ### Configuration
 
-    Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
+    Example: '"$nowplaying" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
          
             --plex, -p    IP address(es) or domain name of Plex Server
                           separated by commas, no spaces.
