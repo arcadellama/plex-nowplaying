@@ -31,7 +31,8 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
 ### Configuration
 
-    Example: nowplaying -p 192.168.1.1 --token <PLEX_AUTH_TOKEN>          
+    Example: '"$prgnam" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
+         
             --plex, -p    IP address(es) or domain name of Plex Server
                           separated by commas, no spaces.
                           Default=127.0.0.1
@@ -40,6 +41,9 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
             --width, -w   Maximum number of columns width.
                           Default=0, "infinite"
+
+       --color <on|off>   Color setting. Default is to attempt to discover
+                          your terminal settings and set accordingly.
 
              --help, -h   This screen
 
@@ -53,13 +57,15 @@ I have put it in my .bashrc and pipe it into "lolcat" because it makes me happy.
 
          --fetch <path>   Force fetch as downloader.
                           (Path is optional.)
+ 
+              --verbose   Print every error message.
 
                  --file   Point to a XML file for debugging
+
 ### Exit Codes
--   0     Everything works, something is playing
+-   0     Everything works
 -   1     Something went wrong
--   2-99  Plex server unreachable/timeout
--   222   Everything works, nothing playing 
+-   2-99  Plex server unreachable/timeout 
 
 ### Roadmap
 - [x] Add PLEX AUTH TOKEN option for servers without local auth turned off
