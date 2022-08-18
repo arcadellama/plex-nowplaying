@@ -1,4 +1,4 @@
-# nowplaying.sh
+# plex-nowplaying
 
 ### a pure sh POSIX script to print the "Plex Now Playing" status to stdout.
 
