@@ -42,6 +42,8 @@ I have put it in my .bashrc for the screenshot seen above.
 
             --token, -t   Plex Auth Token
 
+      --timeout <value>   Time to wait for connection, default=1
+
             --width, -w   Maximum number of columns width.
                           Default=0, "infinite"
 
@@ -87,3 +89,4 @@ By default, the script will only show a result if it finds a Plex server with me
 - [x] Add colors, bold, italics, etc.
 - [x] Fix exit codes
 - [x] Add netcat (nc) as a default download agent
+- [x] Add global timeout variable for download agent

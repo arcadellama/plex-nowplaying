@@ -29,7 +29,7 @@ export LC_ALL=C
 
 ## Global Read-only Variables
 prgnam="plex-nowplaying"
-version="1.2.3"
+version="1.3"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
@@ -42,6 +42,7 @@ dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
+timeout=1                       # Timeout for downloading xml file
 
 ## Global accessible variables
 friendly_name="Plex"            # Default server name
@@ -94,6 +95,8 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
 
           --token, -t   Plex Auth Token
 
+    --timeout <value>   Time to wait for connection, default=1
+
                --port   Plex port (default: 32400)
 
           --width, -w   Maximum number of columns width.
@@ -138,7 +141,7 @@ dependency_check() {
             return 0
         else
             printf "[%s]: Error. Cannot find a download agent.\n" "$prgnam"
-            printf "Is curl, wget, or fetch installed?\n"
+            printf "Is nc (netcat), curl, wget, or fetch installed?\n"
             return 1
         fi
     fi
@@ -275,19 +278,19 @@ download_xml() {
     case "$dl_agent" in
           *nc)
             printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
-                "$dl_agent" "$__host" "$plex_port"
+                "$dl_agent" -G "$timeout" "$__host" "$plex_port"
              return "$?"
             ;;
         *curl)
-            "$dl_agent" -m 2 -s "$__url"
+            "$dl_agent" -m "$timeout" -s "$__url"
              return "$?"
             ;;
          *wget)
-            "$dl_agent" -T 2 -qO - "$__url"
+            "$dl_agent" -T "$timeout" -qO - "$__url"
             return "$?" 
             ;;
          *fetch)
-            "$dl_agent" -T 2 -qO - "$__url"
+            "$dl_agent" -T "$timeout" -qO - "$__url"
             return "$?" 
             ;;
         esac
@@ -546,6 +549,9 @@ main() {
                 shift 2 ;;
         --token|-t)
                 plex_token="$2"
+                shift 2 ;;
+         --timeout)
+                timeout="$2"
                 shift 2 ;;
         --width|-w)
                 max_width="$2"
