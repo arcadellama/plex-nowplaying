@@ -29,7 +29,7 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="plex-nowplaying"
-version="1.2.2"
+version="1.2.3"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
@@ -143,14 +143,14 @@ dependency_check() {
         fi
     fi
 
-    for __dla in curl wget fetch nc; do
+    for __dla in nc curl wget fetch; do
         if [ -x "$(command -v "$__dla")" ]; then
         dl_agent="$(command -v "$__dla")"
         return 0
         fi
     done
     
-    printf "Error: curl, wget, fetch not found.\n"
+    printf "Error: nc, curl, wget, and fetch not found.\n"
     exit 1
 }
 

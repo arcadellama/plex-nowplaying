@@ -17,7 +17,7 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 
 ### Dependencies
 - A posix compatible shell (sh, bash, ksh, dash)
-- Will check for curl, wget, and fetch, and will default to netcat (nc)
+- A download agent; unless specified, will autmatically check for netcat (nc), curl, wget, and fetch in that order.
 
 ### Installation
 Clone this repo:
@@ -25,6 +25,7 @@ Clone this repo:
     git clone git@github.com:arcadellama/plex-nowplaying.git
 
 Copy or link the script "nowplaying" it into your path, (e.g., ~/.local/bin, or /usr/local/bin). Without any arguments it looks for a Plex server running on your local server.
+
 See "Configuration" below for more options.
 
 I have put it in my .bashrc for the screenshot seen above.
@@ -85,4 +86,4 @@ By default, the script will only show a result if it finds a Plex server with me
 - [x] Remove the dependancy on grep, sed, cut, and tput
 - [x] Add colors, bold, italics, etc.
 - [x] Fix exit codes
-- [x] Add netcat (nc) as a fallback download agent
+- [x] Add netcat (nc) as a default download agent
