@@ -29,10 +29,11 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="plex-nowplaying"
-version="1.1.4"
+version="1.2.0"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
+friendly_name="Plex"            # Default server name
 max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader
 color=""                        # Toggle color output--default is "auto"
@@ -45,8 +46,6 @@ plex_token=""                   # Auth token for Plex
 ## 
 hw_transcode_symbol="•"         # Symbol to show hardware transcode
 sw_transcode_symbol="◦"         # Symbol to show software transcode
-plexml=""                       # The active Plex XML Status
-session=0
 
 ## Text Color Definitions
 black="\033[30m"
@@ -239,6 +238,16 @@ fix_apostrophe() {
     esac
 }
 	
+server_url() {
+    __host="$1"
+    if [ -n "$plex_token" ]; then
+        printf "http://%s:32400/?X-Plex-Token=%s" \
+            "$__host" "$plex_token"
+    else
+        printf "http://%s:32400" \
+            "$__host"
+    fi
+}
 
 session_url() {
     __host="$1"
@@ -251,7 +260,7 @@ session_url() {
     fi
 }
 
-download_session() {
+download_xml() {
     __url="$1"
     case "$dl_agent" in
         *curl)
@@ -269,26 +278,6 @@ download_session() {
         esac
 }
 
-get_plexml() {
-    __retval=""
-
-    if [ -n "$plex_file" ]; then
-        cat "$plex_file"
-        return
-    fi
-    IFS=,
-    # shellcheck disable=2086
-    set -- ${plex_host}
-    for __host in "$@"; do
-        __url="$(session_url "$__host")" 
-        if download_session "$__url"; then
-            return
-        else
-        __retval="$?"
-        fi
-    done
-    return "$__retval"
-}
 print_nowplaying() {
     __number="$1"
     __album="$(fix_apostrophe "$2")"
@@ -415,19 +404,37 @@ print_nowplaying() {
     printf "%s\n" "$__output"
 }
 
-parse_plexml() {
+parse_server_xml() {
+    # Input variable
+    __server_xml="$1"
+    while IFS= read -r line; do
+        case "$line" in
+            *MediaContainer*)
+                friendly_name="$(get_item "friendlyName" "$line")"
+                return
+                ;;
+        esac
+    done << EOF
+"$__server_xml"
+EOF
+}
+
+parse_session_xml() {
+    # Input variable
+    __session_xml="$1"
+
+    # Local variables
     __title=""
     __user=""
     __album=""
     __type=""
     __transcode=""
 
-    __welcome_msg="Now Playing on Plex: "
+    __welcome_msg="Now Playing on $friendly_name: "
     __transcode_symbol=""
     __trans_type=""
     __count=0
 
-    # get_plexml -->
     while IFS= read -r line; do
         case "$line" in
             ?Video*|?Track*)
@@ -477,7 +484,7 @@ parse_plexml() {
                 ;;
         esac
     done << EOF
-"$plexml"
+"$__session_xml"
 EOF
 
      if [ -n "$verbose" ] && [ "$__count" -eq 0 ]; then
@@ -587,12 +594,30 @@ main() {
         esac
     done
 
-    if dependency_check; then
-        if plexml="$(get_plexml)"; then
-            parse_plexml
-        else
-            no_server_error "$?"
-        fi
+    # Check for download agent
+    dependency_check || exit 1
+
+    # Debug mode check, simply cat the given xml file for testing
+    if [ -n "$plex_file" ]; then
+        parse_session_xml "$(cat "$plex_file")"
+        return
     fi
+
+    # Cycle through the given hostnames
+    IFS=,
+    # shellcheck disable=2086
+    set -- ${plex_host}
+    for __host in "$@"; do
+        if __server_xml="$(download_xml "$(server_url "$__host")")"; then
+            __session_xml="$(download_xml "$(session_url "$__host")")"
+            parse_server_xml "$__server_xml"
+            parse_session_xml "$__session_xml"
+            return
+        else
+            __retval="$?"
+        fi
+    done
+            no_server_error "$__retval"
+            return "$__retval"
 }
 main "$@"
