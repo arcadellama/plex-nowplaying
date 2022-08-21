@@ -29,10 +29,11 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="plex-nowplaying"
-version="1.2.1"
+version="1.2.2"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
+plex_port="32400"               # Default port for Plex server
 max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader
 color=""                        # Toggle color output--default is "auto"
@@ -88,6 +89,8 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
 
         --token, -t   Plex Auth Token
 
+             --port   Plex port (default: 32400)
+
         --width, -w   Maximum number of columns width.
                       Default=0, "infinite"
 
@@ -105,6 +108,9 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
                       (Path is optional.)
 
      --fetch <path>   Force fetch as downloader.
+                      (Path is optional.)
+
+    --netcat <path>   Force netcat (nc) as downloader.
                       (Path is optional.)
  
           --verbose   Print every error message.
@@ -132,14 +138,14 @@ dependency_check() {
         fi
     fi
 
-    for __dla in curl wget fetch; do
+    for __dla in curl wget fetch nc; do
         if [ -x "$(command -v "$__dla")" ]; then
         dl_agent="$(command -v "$__dla")"
         return 0
         fi
     done
     
-    printf "Error: curl, wget, or fetch not found.\n"
+    printf "Error: curl, wget, fetch not found.\n"
     exit 1
 }
 
@@ -499,6 +505,9 @@ main() {
          --plex|-p)
                 plex_host="$2"
                 shift 2 ;;
+            --port)
+                plex_port="$2"
+                shift 2 ;;
         --token|-t)
                 plex_token="$2"
                 shift 2 ;;
@@ -575,6 +584,23 @@ main() {
                         ;;
                         *)
                         dl_agent="$(command -v fetch)"
+                        shift 1 ;;
+                esac
+                skip_checks=1 ;;
+    --netcat|--nc)
+                case "$2" in
+                    *nc)
+                        if [ -x "$2" ]; then
+                            dl_agent="$2"
+                            shift 2 
+                        else
+                            printf "[%s]: Error. Cannot find %s.\n" \
+                                "$prgnam" "$2"
+                            exit 1
+                        fi
+                        ;;
+                        *)
+                        dl_agent="$(command -v nc)"
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
