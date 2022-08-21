@@ -463,13 +463,13 @@ parse_session_xml() {
     __session_xml="$1"
 
     # Local variables
-    __title=""
+    __welcome_msg="Now Playing on $friendly_name: "
     __user="local" # Defaults to local for non-plex accounts
+
+    __title=""
     __album=""
     __type=""
     __transcode=""
-
-    __welcome_msg="Now Playing on $friendly_name: "
     __transcode_symbol=""
     __trans_type=""
     __count=0
