@@ -48,7 +48,7 @@ friendly_name="Plex"            # Default server name
 server_path="/"                 # Base path for plex API
 session_path="status/sessions"  # Path for sessions API
 token_arg="?X-Plex-Token="      # Plex token arg
-session=0                       # Toggle for active session
+session_count=0                 # Toggle for active session
 
 
 hw_transcode_symbol="•"         # Symbol to show hardware transcode
@@ -464,7 +464,7 @@ parse_session_xml() {
 
     # Local variables
     __title=""
-    __user=""
+    __user="local" # Defaults to local for non-plex accounts
     __album=""
     __type=""
     __transcode=""
@@ -480,11 +480,11 @@ parse_session_xml() {
                 __type="$(get_item "type" "$line")"
                 __album="$(get_item "grandparentTitle" "$line")"
                 __title="$(get_item "title" "$line")"
+                session_count="$((session_count+1))"
                 ;;
 
             *User\ id*)
                 __user="$(get_item "title" "$line")"
-                session="$((session+1))"
                 ;;
 
             *TranscodeSession*)
@@ -517,7 +517,7 @@ parse_session_xml() {
                 ;;
             */MediaContainer*)
                 # Check if end of xml file
-                if [ "$session" -gt 0 ]; then
+                if [ "$session_count" -gt 0 ]; then
                     printf "\n"
                 fi
                 ;;
