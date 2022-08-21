@@ -29,11 +29,10 @@ export LC_ALL=C
 
 ## Global Variables
 prgnam="plex-nowplaying"
-version="1.2.0"
+version="1.2.1"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
-friendly_name="Plex"            # Default server name
 max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader
 color=""                        # Toggle color output--default is "auto"
@@ -44,6 +43,8 @@ plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
 
 ## 
+friendly_name="Plex"            # Default server name
+session=0                       # Toggle for active session
 hw_transcode_symbol="•"         # Symbol to show hardware transcode
 sw_transcode_symbol="◦"         # Symbol to show software transcode
 
