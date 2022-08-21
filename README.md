@@ -17,7 +17,7 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 
 ### Dependencies
 - A posix compatible shell (sh, bash, ksh, dash)
-- curl, wget, or fetch
+- Will check for curl, wget, and fetch, and will default to netcat (nc)
 
 ### Installation
 Clone this repo:
@@ -37,6 +37,8 @@ I have put it in my .bashrc for the screenshot seen above.
                           separated by commas, no spaces.
                           Default=127.0.0.1
 
+                 --port   Plex port (default: 32400)
+
             --token, -t   Plex Auth Token
 
             --width, -w   Maximum number of columns width.
@@ -44,10 +46,6 @@ I have put it in my .bashrc for the screenshot seen above.
 
        --color <on|off>   Color setting. Default is to attempt to discover
                           your terminal settings and set accordingly.
-                          
-              --verbose   Print every error message.
-              
-                 --file   Point to a XML file for debugging
 
              --help, -h   This screen
 
@@ -62,6 +60,12 @@ I have put it in my .bashrc for the screenshot seen above.
          --fetch <path>   Force fetch as downloader.
                           (Path is optional.)
 
+   --netcat,--nc <path>   Force netcat (nc) as downloader.
+                          (Path is optional.)
+
+              --verbose   Print every error message.
+
+                 --file   Point to a XML file for debugging
 
 ### Why can you add more than one Plex host?
 This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.
@@ -81,3 +85,4 @@ By default, the script will only show a result if it finds a Plex server with me
 - [x] Remove the dependancy on grep, sed, cut, and tput
 - [x] Add colors, bold, italics, etc.
 - [x] Fix exit codes
+- [x] Add netcat (nc) as a fallback download agent
