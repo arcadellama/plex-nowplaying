@@ -27,7 +27,7 @@
 
 export LC_ALL=C
 
-## Global Variables
+## Global Read-only Variables
 prgnam="plex-nowplaying"
 version="1.2.3"
 
@@ -43,14 +43,14 @@ skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
 
-## Global accessible
+## Global accessible variables
 friendly_name="Plex"            # Default server name
 server_path="/"                 # Base path for plex API
 session_path="status/sessions"  # Path for sessions API
 token_arg="?X-Plex-Token="      # Plex token arg
 session_count=0                 # Toggle for active session
 
-
+## Global display variables
 hw_transcode_symbol="•"         # Symbol to show hardware transcode
 sw_transcode_symbol="◦"         # Symbol to show software transcode
 
@@ -83,10 +83,10 @@ print_help() {
 cat <<EOF
 
 $prgnam, version $version
-a simple, POSIX-compliant script to print the "Now Playing" status
-of a Plex server to stdout.
+A command-line script to print the "Now Playing" status of
+a Plex server to stdout.
 
-Example: 'nowplaying -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
+Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
          
           --plex, -p    IP address(es) or domain name of Plex Server
                         separated by commas, no spaces.
@@ -127,8 +127,8 @@ EOF
 no_server_error() {
     __ret="$1"  # Input variable
     if [ -n "$verbose" ]; then
-        printf "Plex server not not found at %s. (Error code: %s)\n"\
-            "$plex_host" "$__ret"
+        printf "[%s]: Plex server not not found at %s. (Error code: %s)\n"\
+            "$prgnam" "$plex_host" "$__ret"
     fi
 }
 
@@ -150,7 +150,7 @@ dependency_check() {
         fi
     done
     
-    printf "Error: nc, curl, wget, and fetch not found.\n"
+    printf "[%s]: Error. nc, curl, wget, and fetch not found.\n" "$prgnam"
     exit 1
 }
 
@@ -314,17 +314,21 @@ get_plexml() {
         __path="${__path}${token_arg}"
     fi
 
+    # Download the xml
     download_xml "$__host" "$__path"
 }
 
 print_nowplaying() {
+    # Input variables from parse_session_xml
     __number="$1"
     __album="$(fix_apostrophe "$2")"
     __title="$(fix_apostrophe "$3")"
-    __track="$__title"
     __user="$4"
     __type="$5"
     __transcode="$6"
+
+    # Local variables
+    __track="$__title"
     __columns=""
 
     # Set column width
@@ -448,7 +452,7 @@ parse_server_xml() {
     __server_xml="$1"
     while IFS= read -r line; do
         case "$line" in
-            *MediaContainer*)
+            *friendlyName*)
                 friendly_name="$(get_item "friendlyName" "$line")"
                 return
                 ;;
@@ -653,7 +657,7 @@ main() {
         esac
     done
 
-    # Check for download agent
+    # Check for and set download agent
     dependency_check || exit 1
 
     # Debug mode check, simply cat the given xml file for testing
