@@ -32,43 +32,43 @@ I have put it in my .bashrc for the screenshot seen above.
 
 ### Configuration
 
-    Example: '"$nowplaying" -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
+    Example: '"$nowplaying" -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>
          
-            --plex, -p    IP address(es) or domain name of Plex Server
-                          separated by commas, no spaces.
-                          Default=127.0.0.1
+                  --plex, -p    IP address(es) or domain name of Plex Server
+                                separated by commas, no spaces.
+                                Default=127.0.0.1
 
-                 --port   Plex port (default: 32400)
+                       --port   Plex port (default: 32400)
 
-            --token, -t   Plex Auth Token
+                  --token, -t   Plex Auth Token
 
-      --timeout <value>   Time to wait for connection, default=1
+            --timeout <value>   Time to wait for connection, default=1
 
-            --width, -w   Maximum number of columns width.
-                          Default=0, "infinite"
+                  --width, -w   Maximum number of columns width.
+                                Default=0, "infinite"
 
-       --color <on|off>   Color setting. Default is to attempt to discover
-                          your terminal settings and set accordingly.
+             --color <on|off>   Color setting. Default is to attempt to discover
+                                your terminal settings and set accordingly.
 
-             --help, -h   This screen
+                   --help, -h   This screen
 
-          --version, -v   Show version
+                --version, -v   Show version
 
-          --curl <path>   Force curl as downloader.
-                          (Path is optional.)
+                --curl <path>   Force curl as downloader.
+                                (Path is optional.)
 
-          --wget <path>   Force wget as downloader.
-                          (Path is optional.)
+                --wget <path>   Force wget as downloader.
+                                (Path is optional.)
 
-         --fetch <path>   Force fetch as downloader.
-                          (Path is optional.)
+               --fetch <path>   Force fetch as downloader.
+                                (Path is optional.)
+                          
+         --netcat,--nc <path>   Force netcat (nc) as downloader.
+                                (Path is optional.)
 
-   --netcat,--nc <path>   Force netcat (nc) as downloader.
-                          (Path is optional.)
+                    --verbose   Print every error message.
 
-              --verbose   Print every error message.
-
-                 --file   Point to a XML file for debugging
+                       --file   Point to a XML file for debugging
 
 ### Why can you add more than one Plex host?
 This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.
