@@ -90,3 +90,4 @@ By default, the script will only show a result if it finds a Plex server with me
 - [x] Fix exit codes
 - [x] Add netcat (nc) as a default download agent
 - [x] Add global timeout variable for download agent
+- [ ] Add an option for external config file and/or environment variables
