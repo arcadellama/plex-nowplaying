@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # nowplaying.sh – A simple, POSIX-compliant shell script to print the
 # "Now Playing" status of a local Plex Server to stdout.
@@ -288,6 +288,12 @@ download_xml() {
             "$dl_agent" -T "$timeout" -qO - "$__url"
             return "$?" 
             ;;
+          *bash)
+             exec 3<>/dev/tcp/"$__host"/"$plex_port"
+             printf "GET %s HTTP/1.0\r\n\r\n" "$__path" >&3
+             cat <&3
+             return "$?"
+            ;;
           *nc)
             printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
                 "$dl_agent" -w "$timeout" "$__host" "$plex_port"
@@ -314,7 +320,7 @@ get_plexml() {
     esac
 
     if [ -n "$plex_token" ]; then
-        __path="${__path}${token_arg}"
+        __path="${__path}${token_arg}${plex_token}"
     fi
 
     # Download the xml
@@ -626,6 +632,23 @@ main() {
                         ;;
                         *)
                         dl_agent="$(command -v fetch)"
+                        shift 1 ;;
+                esac
+                skip_checks=1 ;;
+           --bash)
+                case "$2" in
+                    *bash)
+                        if [ -x "$2" ]; then
+                            dl_agent="$2"
+                            shift 2 
+                        else
+                            printf "[%s]: Error. Cannot find %s.\n" \
+                                "$prgnam" "$2"
+                            exit 1
+                        fi
+                        ;;
+                        *)
+                        dl_agent="$(command -v bash)"
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
