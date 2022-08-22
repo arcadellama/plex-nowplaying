@@ -141,19 +141,19 @@ dependency_check() {
             return 0
         else
             printf "[%s]: Error. Cannot find a download agent.\n" "$prgnam"
-            printf "Is nc (netcat), curl, wget, or fetch installed?\n"
+            printf "Is curl, wget, fetch, or nc (ncat,netcat) installed?\n"
             return 1
         fi
     fi
 
-    for __dla in nc curl wget fetch; do
+    for __dla in curl wget fetch nc; do
         if [ -x "$(command -v "$__dla")" ]; then
         dl_agent="$(command -v "$__dla")"
         return 0
         fi
     done
     
-    printf "[%s]: Error. nc, curl, wget, and fetch not found.\n" "$prgnam"
+    printf "[%s]: Error. curl, wget, fetch, or nc not found.\n" "$prgnam"
     exit 1
 }
 
@@ -276,11 +276,6 @@ download_xml() {
     __url="http://${__host}:${plex_port}${__path}"
 
     case "$dl_agent" in
-          *nc)
-            printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
-                "$dl_agent" -G "$timeout" "$__host" "$plex_port"
-             return "$?"
-            ;;
         *curl)
             "$dl_agent" -m "$timeout" -s "$__url"
              return "$?"
@@ -292,6 +287,11 @@ download_xml() {
          *fetch)
             "$dl_agent" -T "$timeout" -qO - "$__url"
             return "$?" 
+            ;;
+          *nc)
+            printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
+                "$dl_agent" -w "$timeout" "$__host" "$plex_port"
+             return "$?"
             ;;
         esac
 }

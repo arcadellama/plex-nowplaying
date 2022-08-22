@@ -17,7 +17,7 @@ This started out as a quick way to make sure I didn't kick anyone off Plex befor
 
 ### Dependencies
 - A posix compatible shell (sh, bash, ksh, dash)
-- A download agent; unless specified, will autmatically check for netcat (nc), curl, wget, and fetch in that order.
+- A download agent; unless specified, will curl, wget, fetch, and nc (ncat/netcat) in that order.
 
 ### Installation
 Clone this repo:
