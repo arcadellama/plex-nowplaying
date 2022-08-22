@@ -27,12 +27,13 @@
 
 export LC_ALL=C
 
-## Global Variables
+## Global Read-only Variables
 prgnam="plex-nowplaying"
-version="1.2.1"
+version="1.3"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
+plex_port="32400"               # Default port for Plex server
 max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader
 color=""                        # Toggle color output--default is "auto"
@@ -41,10 +42,16 @@ dl_agent=""                     # Either curl, wget, or fetch
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
 plex_token=""                   # Auth token for Plex
+timeout=1                       # Timeout for downloading xml file
 
-## 
+## Global accessible variables
 friendly_name="Plex"            # Default server name
-session=0                       # Toggle for active session
+server_path="/"                 # Base path for plex API
+session_path="status/sessions"  # Path for sessions API
+token_arg="?X-Plex-Token="      # Plex token arg
+session_count=0                 # Toggle for active session
+
+## Global display variables
 hw_transcode_symbol="•"         # Symbol to show hardware transcode
 sw_transcode_symbol="◦"         # Symbol to show software transcode
 
@@ -77,47 +84,54 @@ print_help() {
 cat <<EOF
 
 $prgnam, version $version
-a simple, POSIX-compliant script to print the "Now Playing" status
-of a Plex server to stdout.
+A command-line script to print the "Now Playing" status of
+a Plex server to stdout.
 
-Example: 'nowplaying -p 192.168.1.1 -w 80 -d "." -t <PLEX_AUTH_TOKEN>
+Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
          
-        --plex, -p    IP address(es) or domain name of Plex Server
-                      separated by commas, no spaces.
-                      Default=127.0.0.1
+          --plex, -p    IP address(es) or domain name of Plex Server
+                        separated by commas, no spaces.
+                        Default=127.0.0.1
 
-        --token, -t   Plex Auth Token
+          --token, -t   Plex Auth Token
 
-        --width, -w   Maximum number of columns width.
-                      Default=0, "infinite"
+    --timeout <value>   Time to wait for connection, default=1
 
-   --color <on|off>   Color setting. Default is to attempt to discover
-                      your terminal settings and set accordingly.
+               --port   Plex port (default: 32400)
 
-         --help, -h   This screen
+          --width, -w   Maximum number of columns width.
+                        Default=0, "infinite"
 
-      --version, -v   Show version
+     --color <on|off>   Color setting. Default is to attempt to discover
+                        your terminal settings and set accordingly.
 
-      --curl <path>   Force curl as downloader.
-                      (Path is optional.)
+           --help, -h   This screen
 
-      --wget <path>   Force wget as downloader.
-                      (Path is optional.)
+        --version, -v   Show version
 
-     --fetch <path>   Force fetch as downloader.
-                      (Path is optional.)
+        --curl <path>   Force curl as downloader.
+                        (Path is optional.)
+
+        --wget <path>   Force wget as downloader.
+                        (Path is optional.)
+
+        --fetch <path>   Force fetch as downloader.
+                         (Path is optional.)
+
+  --netcat,--nc <path>   Force netcat (nc) as downloader.
+                         (Path is optional.)
  
-          --verbose   Print every error message.
+             --verbose   Print every error message.
 
-             --file   Point to a XML file for debugging
+                --file   Point to a XML file for debugging
 EOF
 }
 
 no_server_error() {
-    __ret="$1"
+    __ret="$1"  # Input variable
     if [ -n "$verbose" ]; then
-        printf "Plex server not not found at %s. (Error code: %s)\n"\
-            "$plex_host" "$__ret"
+        printf "[%s]: Plex server not not found at %s. (Error code: %s)\n"\
+            "$prgnam" "$plex_host" "$__ret"
     fi
 }
 
@@ -127,19 +141,19 @@ dependency_check() {
             return 0
         else
             printf "[%s]: Error. Cannot find a download agent.\n" "$prgnam"
-            printf "Is curl, wget, or fetch installed?\n"
+            printf "Is curl, wget, fetch, or nc (ncat,netcat) installed?\n"
             return 1
         fi
     fi
 
-    for __dla in curl wget fetch; do
+    for __dla in curl wget fetch nc; do
         if [ -x "$(command -v "$__dla")" ]; then
         dl_agent="$(command -v "$__dla")"
         return 0
         fi
     done
     
-    printf "Error: curl, wget, or fetch not found.\n"
+    printf "[%s]: Error. curl, wget, fetch, or nc not found.\n" "$prgnam"
     exit 1
 }
 
@@ -159,11 +173,13 @@ color_check() {
     esac
 }
 
-set_color() { # Usage: set_color "string" "$color" "$effect" "$effect"
+set_color() {
+    # Usage: set_color "string" "$color" "$effect" "$effect"
     __item="$1"
     __color="$2"
     __fx1="$3"
     __fx2="$4"
+
     if [ -n "$__fx2" ]; then
         printf "%b%b%b%s%b" "$__fx1" "$__fx2" "$__color" "$__item" "$treset"
         return
@@ -179,8 +195,10 @@ set_color() { # Usage: set_color "string" "$color" "$effect" "$effect"
 }
 
 get_item() {
+    # Input variables
     __item="$1"
     __line="$2"
+
     set -f
     oldIFS=$IFS
     IFS='"'
@@ -200,8 +218,11 @@ get_item() {
 }
 
 truncate_string() {
+    # Input variables
     __string="$1"
     __width="$2"
+
+    # Local variables
     __count="$(((${#__string} - __width) + 3))" # 3 additional for elipses
 
     while [ "$__count" -gt 0 ]; do
@@ -213,9 +234,13 @@ truncate_string() {
 }
 
 print_delim() {
+    # Input variables
     __word="$1"
     __width="$2"
+
+    # local variables
     __count=$((__width - __word))
+
     while [ "$__count" -gt 0 ]; do
         printf "%s" "$dot_leader"
         __count=$((__count - 1))
@@ -223,7 +248,10 @@ print_delim() {
 }
 
 fix_apostrophe() {
+    # Input Variable
     __input="$1"
+
+    # Local variables
     __oldIFS=$IFS
     IFS='&'
     # shellcheck disable=2086
@@ -238,55 +266,72 @@ fix_apostrophe() {
             ;;
     esac
 }
-	
-server_url() {
-    __host="$1"
-    if [ -n "$plex_token" ]; then
-        printf "http://%s:32400/?X-Plex-Token=%s" \
-            "$__host" "$plex_token"
-    else
-        printf "http://%s:32400" \
-            "$__host"
-    fi
-}
-
-session_url() {
-    __host="$1"
-    if [ -n "$plex_token" ]; then
-        printf "http://%s:32400/status/sessions?X-Plex-Token=%s" \
-            "$__host" "$plex_token"
-    else
-        printf "http://%s:32400/status/sessions" \
-            "$__host"
-    fi
-}
 
 download_xml() {
-    __url="$1"
+    # Input variables passed from get_plexml()
+    __host="$1"
+    __path="$2"
+
+    # Local variable
+    __url="http://${__host}:${plex_port}${__path}"
+
     case "$dl_agent" in
         *curl)
-            "$dl_agent" -m 2 -s "$__url"
+            "$dl_agent" -m "$timeout" -s "$__url"
              return "$?"
             ;;
          *wget)
-            "$dl_agent" -T 2 -qO - "$__url"
+            "$dl_agent" -T "$timeout" -qO - "$__url"
             return "$?" 
             ;;
          *fetch)
-            "$dl_agent" -T 2 -qO - "$__url"
+            "$dl_agent" -T "$timeout" -qO - "$__url"
             return "$?" 
+            ;;
+          *nc)
+            printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
+                "$dl_agent" -w "$timeout" "$__host" "$plex_port"
+             return "$?"
             ;;
         esac
 }
+get_plexml() {
+    ## Input variables passed from main()
+    __type="$1" # either server or session
+    __host="$2"
+
+    ## Local variables
+    __path=""
+    __url=""
+
+    case "$__type" in
+        server)
+            __path="$server_path"
+            ;;
+        session)
+            __path="${server_path}${session_path}"
+            ;;
+    esac
+
+    if [ -n "$plex_token" ]; then
+        __path="${__path}${token_arg}"
+    fi
+
+    # Download the xml
+    download_xml "$__host" "$__path"
+}
 
 print_nowplaying() {
+    # Input variables from parse_session_xml
     __number="$1"
     __album="$(fix_apostrophe "$2")"
     __title="$(fix_apostrophe "$3")"
-    __track="$__title"
     __user="$4"
     __type="$5"
     __transcode="$6"
+
+    # Local variables
+    __track="$__title"
     __columns=""
 
     # Set column width
@@ -410,7 +455,7 @@ parse_server_xml() {
     __server_xml="$1"
     while IFS= read -r line; do
         case "$line" in
-            *MediaContainer*)
+            *friendlyName*)
                 friendly_name="$(get_item "friendlyName" "$line")"
                 return
                 ;;
@@ -425,13 +470,13 @@ parse_session_xml() {
     __session_xml="$1"
 
     # Local variables
+    __welcome_msg="Now Playing on $friendly_name: "
+    __user="local" # Defaults to local for non-plex accounts
+
     __title=""
-    __user=""
     __album=""
     __type=""
     __transcode=""
-
-    __welcome_msg="Now Playing on $friendly_name: "
     __transcode_symbol=""
     __trans_type=""
     __count=0
@@ -442,11 +487,11 @@ parse_session_xml() {
                 __type="$(get_item "type" "$line")"
                 __album="$(get_item "grandparentTitle" "$line")"
                 __title="$(get_item "title" "$line")"
+                session_count="$((session_count+1))"
                 ;;
 
             *User\ id*)
                 __user="$(get_item "title" "$line")"
-                session="$((session+1))"
                 ;;
 
             *TranscodeSession*)
@@ -479,7 +524,7 @@ parse_session_xml() {
                 ;;
             */MediaContainer*)
                 # Check if end of xml file
-                if [ "$session" -gt 0 ]; then
+                if [ "$session_count" -gt 0 ]; then
                     printf "\n"
                 fi
                 ;;
@@ -499,8 +544,14 @@ main() {
          --plex|-p)
                 plex_host="$2"
                 shift 2 ;;
+            --port)
+                plex_port="$2"
+                shift 2 ;;
         --token|-t)
                 plex_token="$2"
+                shift 2 ;;
+         --timeout)
+                timeout="$2"
                 shift 2 ;;
         --width|-w)
                 max_width="$2"
@@ -578,6 +629,23 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
+    --netcat|--nc)
+                case "$2" in
+                    *nc)
+                        if [ -x "$2" ]; then
+                            dl_agent="$2"
+                            shift 2 
+                        else
+                            printf "[%s]: Error. Cannot find %s.\n" \
+                                "$prgnam" "$2"
+                            exit 1
+                        fi
+                        ;;
+                        *)
+                        dl_agent="$(command -v nc)"
+                        shift 1 ;;
+                esac
+                skip_checks=1 ;;
          *verbose)
                 verbose="1"
                 shift 1 ;;
@@ -595,7 +663,7 @@ main() {
         esac
     done
 
-    # Check for download agent
+    # Check for and set download agent
     dependency_check || exit 1
 
     # Debug mode check, simply cat the given xml file for testing
@@ -609,8 +677,8 @@ main() {
     # shellcheck disable=2086
     set -- ${plex_host}
     for __host in "$@"; do
-        if __server_xml="$(download_xml "$(server_url "$__host")")"; then
-            __session_xml="$(download_xml "$(session_url "$__host")")"
+        if __server_xml="$(get_plexml "server" "$__host")"; then
+            __session_xml="$(get_plexml "session" "$__host")"
             parse_server_xml "$__server_xml"
             parse_session_xml "$__session_xml"
             return
