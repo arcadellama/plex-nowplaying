@@ -169,6 +169,13 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
 
                 --file   Point to a XML file for debugging
 
+Configuration:
+    If no --config,-c is given, nowplaying will look in:
+            ~/.nowplayingrc
+            ~/.config/nowplaying.conf
+            /usr/local/etc/nowplaying.conf
+            /etc/nowplaying.etc
+
 EOF
 }
 
