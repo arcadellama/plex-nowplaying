@@ -743,8 +743,8 @@ main() {
                 printf "%s: %s\n" "$prgnam" "$version"
                 exit 0 ;;
                  *)
-	            log_error "$1 is not a valid expression. \
-                    Try nowplaying --help for help."
+	            log_error "$1 is not a valid expression."
+                printf "Try nowplaying --help for help.\n"
                 exit 1 ;;
         esac
     done
