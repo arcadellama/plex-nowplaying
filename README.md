@@ -2,7 +2,7 @@
 
 ### A CLI script to show the "Plex Now Playing" status in your terminal.
 
-![Image](/.github/images/nowplaying-screenshot.png)
+![Image](/.github/images/screenshot.png)
 
 [![GitHub Super-Linter](https://github.com/arcadellama/nowplaying.sh/workflows/Lint%20Code%20Base/badge.svg)](https://github.com/marketplace/actions/super-linter)
 
@@ -34,13 +34,13 @@ I have put it in my .bashrc for the screenshot seen above.
 
     Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
     
-               --help, -h   This screen
+               --help, -h    This screen
     
-      --config, -c <file>   Configuration file. Overrides command args.
+      --config, -c <file>    Configuration file. Overrides command args.
       
-          --plex, -p <ip>   IP address(es) or domain name of Plex Server
-                            separated by commas, no spaces.
-                            Default=127.0.0.1
+          --plex, -p <ip>    IP address(es) or domain name of Plex Server
+                             separated by commas, no spaces.
+                             Default=127.0.0.1
     
            --port <number>   Plex port (default: 32400)
     
@@ -48,19 +48,18 @@ I have put it in my .bashrc for the screenshot seen above.
     
          --timeout <value>   Time to wait for connection, default=1
     
-          --color <on|off>   Color setting. Default is to attempt to discover
-                             your terminal settings and set accordingly.
+          --color <on|off>   Color setting. Default is "auto."
     
       --width, -w <number>   Maximum number of columns width.
                              Default=0, "infinite"
     
-             --version, -v  Show version
+             --version, -v   Show version
     
-             --curl <path>  Force curl as downloader.
-                            (Path is optional.)
+             --curl <path>   Force curl as downloader.
+                             (Path is optional.)
     
-             --wget <path>  Force wget as downloader.
-                            (Path is optional.)
+             --wget <path>   Force wget as downloader.
+                             (Path is optional.)
     
             --fetch <path>   Force fetch as downloader.
                              (Path is optional.)
@@ -68,25 +67,28 @@ I have put it in my .bashrc for the screenshot seen above.
       --netcat,--nc <path>   Force netcat (nc) as downloader.
                              (Path is optional.)
      
-                 --verbose   Print every error message.
+             --verbose, -V   Print every message. Good for debugging.
     
                     --file   Point to a XML file for debugging
     
 ## Configuration File
-Your Plex Server IP and Tokens probably shouldn't be version controlled for the world to see. You can create a configuration file, example is given at nowplaying.conf.sample, and use the "--config </path/to/file>"
-
-Current options are:  
-
-    NP_PLEX_HOST=0.0.0.0  
-    NP_PLEX_PORT=32400  
-    NP_PLEX_TOKEN=xxxxxxxx  
-
 If no config file is given with command, nowplaying will look for a configuration file in the following order:
 
     ~/.nowplayingrc
     ~/.config/nowplaying.conf
     /usr/local/etc/nowplaying.conf
     /etc/nowplaying.conf
+
+Your Plex Server IP and Tokens probably shouldn't be version controlled for the world to see. You can create a configuration file, example is given at nowplaying.conf.sample, and use the "--config </path/to/file>"
+
+Current configurable options are:  
+
+    NP_PLEX_HOST=127.0.0.1
+    NP_PLEX_PORT=32400  
+    NP_PLEX_TOKEN=xxxxxxxx  
+    NP_TIMEOUT=1
+    NP_MAX_WIDTH=80
+    NP_COLOR_MODE=auto
 
 ### Why can you add more than one Plex host?
 This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.

@@ -1,4 +1,31 @@
 # Sample config for plex-nowplaying
-NP_PLEX_HOST=127.0.0.1
-NP_PLEX_PORT=32400
-NP_PLEX_TOKEN=xxxxxxxxxx
+
+# IP address or FQDN for the Plex Server. More than one can be declared
+# separated by a comma. The script will stop at the first responsive server
+# it finds. Default if no argument passed is "127.0.0.1"
+#
+# Example: NP_PLEX_HOST=192.168.111.1,plex.example.com
+#
+# NP_PLEX_HOST=127.0.0.1
+
+# Port the Plex Server is listening on. Default is 32400.
+#
+# NP_PLEX_PORT=32400
+
+# You may need your Plex Auth Token to access a remote database.
+# Instructions on how to find this is here:
+# https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+#
+# NP_PLEX_TOKEN=""
+
+# This is the maximum number of columns you want it to span.
+# plex-nowplaying will attempt to discover the number of columns avaiable,
+# if it's less than this number, it will override the the maximum width.
+# Default is '0' which is the same as 'auto' or 'infinite.'
+#
+# NP_MAX_WIDTH=0
+
+# Color output mode. Options are: on, off, auto.
+# Default is 'auto'.
+#
+# NP_COLOR_MODE=auto

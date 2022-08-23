@@ -29,7 +29,7 @@ export LC_ALL=C
 
 ## Global Read-only Variables
 prgnam="plex-nowplaying"
-version="1.3.3"
+version="1.3.4"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
@@ -83,130 +83,34 @@ movie_color="$blue"
 episode_color="$cyan"
 song_color="$magenta"
 transcode_color="$green"
+log_color="$green"
+log_error_color="$red"
 
 ## Functions
 get_conf() {
+    __conffile="$1"
     ## Global configuration options
     NP_PLEX_HOST=""
     NP_PLEX_PORT=""
     NP_PLEX_TOKEN="" 
+    NP_MAX_WIDTH=""
+    NP_COLOR_MODE=""
 
-    if [ -r "$config_file" ]; then
+    if [ -r "$__conffile" ]; then
        while IFS='=' read -r key val; do
             # Skip over lines containing comments.
             [ "${key##\#*}" ] || continue
               case "$key" in
+
                   NP_PLEX_HOST) plex_host="$val" ;;
                   NP_PLEX_PORT) plex_port="$val" ;;
                  NP_PLEX_TOKEN) plex_token="$val" ;;
+                  NP_MAX_WIDTH) max_width="$val" ;;
+                 NP_COLOR_MODE) color="$val" ;;
+
               esac
-          done < "$config_file"
+          done < "$__conffile"
     fi
-}
-
-check_conf() {
-    __conf=""
-    # disable globbing
-    set -f
-    # shellcheck disable=2086
-    set -- ${conf_path}
-    for __conf in "$@"; do
-        if [ -r "$__conf" ]; then
-            config_file="$__conf"
-            set +f
-            return 0
-        fi
-    done
-    set +f
-    return 1
-}
-
-
-print_help() {
-cat <<EOF
-
-$prgnam, version $version
-A command-line script to print the "Now Playing" status of
-a Plex server to stdout.
-
-Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
-
-           --help, -h   This screen
-
-  --config, -c <file>   Configuration file. Overrides command args.
-
-      --plex, -p <ip>   IP address(es) or domain name of Plex Server
-                        separated by commas, no spaces.
-                        Default=127.0.0.1
-
-       --port <number>   Plex port (default: 32400)
-
-    --token, -t <path>   Plex Auth Token, optional point to file.
-
-     --timeout <value>   Time to wait for connection, default=1
-
-      --color <on|off>   Color setting. Default is to attempt to discover
-                         your terminal settings and set accordingly.
-
-  --width, -w <number>   Maximum number of columns width.
-                         Default=0, "infinite"
-
-         --version, -v  Show version
-
-         --curl <path>  Force curl as downloader.
-                        (Path is optional.)
-
-         --wget <path>  Force wget as downloader.
-                        (Path is optional.)
-
-        --fetch <path>   Force fetch as downloader.
-                         (Path is optional.)
-
-  --netcat,--nc <path>   Force netcat (nc) as downloader.
-                         (Path is optional.)
- 
-             --verbose   Print every error message.
-
-                --file   Point to a XML file for debugging
-
-Configuration:
-    If no --config,-c is given, nowplaying will look in:
-            ~/.nowplayingrc
-            ~/.config/nowplaying.conf
-            /usr/local/etc/nowplaying.conf
-            /etc/nowplaying.etc
-
-EOF
-}
-
-no_server_error() {
-    __ret="$1"  # Input variable
-    if [ -n "$verbose" ]; then
-        printf "[%s]: Plex server not not found at %s. (Error code: %s)\n"\
-            "$prgnam" "$plex_host" "$__ret"
-    fi
-}
-
-dependency_check() {
-    if [ -n "$skip_checks" ]; then
-        if [ -x "$dl_agent" ]; then
-            return 0
-        else
-            printf "[%s]: Error. Cannot find a download agent.\n" "$prgnam"
-            printf "Is curl, wget, fetch, or nc (ncat,netcat) installed?\n"
-            return 1
-        fi
-    fi
-
-    for __dla in curl wget fetch nc; do
-        if [ -x "$(command -v "$__dla")" ]; then
-        dl_agent="$(command -v "$__dla")"
-        return 0
-        fi
-    done
-    
-    printf "[%s]: Error. curl, wget, fetch, or nc not found.\n" "$prgnam"
-    exit 1
 }
 
 color_check() {
@@ -244,6 +148,67 @@ set_color() {
     fi
     # Don't error-out if args aren't passed
     printf "%s" "$__item"
+}
+
+log() {
+    __message="$1"  # Input variable
+    __prefix="[$prgnam]: "
+
+    if color_check; then
+        set_color "$__prefix" "$log_color" "$bold"
+    else
+        printf "%s" "$__prefix"
+    fi
+    printf "%s\n" "$__message"
+}
+
+log_error() {
+    __message="$1"  # Input variable
+    __prefix="[$prgnam] Error: "
+
+    if color_check; then
+        set_color "$__prefix" "$log_error_color" "$bold"
+    else
+        printf "%s" "$__prefix"
+    fi
+    printf "%s\n" "$__message"
+}
+dependency_check() {
+    if [ -n "$skip_checks" ]; then
+        if [ -x "$dl_agent" ]; then
+            return 0
+        else
+            log_error "Cannot find a download agent. \
+            Is curl, wget, fetch, or nc (ncat,netcat) installed?"
+            return 1
+        fi
+    fi
+
+    for __dla in curl wget fetch nc; do
+        if [ -x "$(command -v "$__dla")" ]; then
+        dl_agent="$(command -v "$__dla")"
+        return 0
+        fi
+    done
+    
+    log_error "curl, wget, fetch, or nc not found."
+    exit 1
+}
+
+check_conf() {
+    __conf=""
+    # disable globbing
+    set -f
+    # shellcheck disable=2086
+    set -- ${conf_path}
+    for __conf in "$@"; do
+        if [ -r "$__conf" ]; then
+            get_conf "$__conf"
+            set +f
+            return
+        fi
+    done
+    set +f
 }
 
 get_item() {
@@ -503,6 +468,15 @@ parse_server_xml() {
     __host="$2" # not currently used,
     while IFS= read -r line; do
         case "$line" in
+            *"401 Unauthorized"*)
+                    log_error "Unauthorized access to $__host. (Error code: 401)"
+                if [ -n "$plex_token" ]; then
+                    printf "Invalid PLEX AUTH TOKEN.\n"
+                else
+                    printf "See the README on how to get a PLEX AUTH TOKEN.\n"
+                fi
+                exit 1
+                ;;
             *friendlyName*)
                 friendly_name="$(get_item "friendlyName" "$line")"
                 return
@@ -582,8 +556,65 @@ parse_session_xml() {
 EOF
 
      if [ -n "$verbose" ] && [ "$__count" -eq 0 ]; then
-         printf "Nothing playing on %s (%s)\n" "$friendly_name" "$__host"
+         log "Nothing playing on $friendly_name ($__host)"
      fi
+}
+
+print_help() {
+cat <<EOF
+
+$prgnam, version $version
+A command-line script to print the "Now Playing" status of
+a Plex server to stdout.
+
+Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
+
+           --help, -h   This screen
+
+  --config, -c <file>   Configuration file. Overrides command args.
+
+      --plex, -p <ip>   IP address(es) or domain name of Plex Server
+                        separated by commas, no spaces.
+                        Default=127.0.0.1
+
+       --port <number>   Plex port (default: 32400)
+
+    --token, -t <path>   Plex Auth Token, optional point to file.
+
+     --timeout <value>   Time to wait for connection, default=1
+
+      --color <on|off>   Color setting. Default is to attempt to discover
+                         your terminal settings and set accordingly.
+
+  --width, -w <number>   Maximum number of columns width.
+                         Default=0, "infinite"
+
+         --version, -v  Show version
+
+         --curl <path>  Force curl as downloader.
+                        (Path is optional.)
+
+         --wget <path>  Force wget as downloader.
+                        (Path is optional.)
+
+        --fetch <path>   Force fetch as downloader.
+                         (Path is optional.)
+
+  --netcat,--nc <path>   Force netcat (nc) as downloader.
+                         (Path is optional.)
+ 
+         --verbose, -V   Print every error message.
+
+                --file   Point to a XML file for debugging
+
+Configuration:
+    If no --config,-c is given, nowplaying will look in:
+            ~/.nowplayingrc
+            ~/.config/nowplaying.conf
+            /usr/local/etc/nowplaying.conf
+            /etc/nowplaying.etc
+
+EOF
 }
 
 main() {
@@ -594,8 +625,8 @@ main() {
         case "$1" in 
        --config|-c)
                 if [ ! -r "$2" ]; then
-		        printf "[%s]: %s config file not found.\n" "$prgnam" "$2"
-                exit 1
+                    log_error "$2 config file not found."
+                    exit 1
                 fi
                 config_file="$2"
                 shift 2 ;;
@@ -606,8 +637,8 @@ main() {
                 plex_port="$2"
                 shift 2 ;;
         --token|-t)
-                   plex_token="$2"
-                   shift 2 ;;
+                plex_token="$2"
+                shift 2 ;;
          --timeout)
                 timeout="$2"
                 shift 2 ;;
@@ -626,8 +657,7 @@ main() {
                     *)
                         color="on"
                         shift 1 ;;
-                esac
-                ;;
+                esac ;;
             --file)
                 plex_file="$2"
                 shift 2 ;;
@@ -649,7 +679,7 @@ main() {
                         ;;
                         *)
                         dl_agent="$(command -v curl)"
-                        shift 1 ;;
+                        shift 1 
                 esac
                 skip_checks=1 ;;
 
@@ -663,8 +693,7 @@ main() {
                             printf "[%s]: Error. Cannot find %s.\n" \
                                 "$prgnam" "$2"
                             exit 1
-                        fi
-                        ;;
+                        fi ;;
                         *)
                         dl_agent="$(command -v wget)"
                         shift 1 ;;
@@ -704,7 +733,7 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
-         *verbose)
+      *verbose|-V)
                 verbose="1"
                 shift 1 ;;
          *help|-h)
@@ -714,9 +743,8 @@ main() {
                 printf "%s: %s\n" "$prgnam" "$version"
                 exit 0 ;;
                  *)
-	            printf "[%s]: \"%s\" is not a valid expression.\n" \
-		        "$prgnam" "$1"
-	            printf "Try \"%s\" --help for help.\n" "$prgnam"
+	            log_error "$1 is not a valid expression. \
+                    Try nowplaying --help for help."
                 exit 1 ;;
         esac
     done
@@ -749,7 +777,10 @@ main() {
             __retval="$?"
         fi
     done
-            no_server_error "$__retval"
-            return "$__retval"
+
+    if [ -n "$verbose" ]; then
+        log_error "No server found at $plex_host. (Error code: $__retval)"
+    fi
+    return "$__retval"
 }
 main "$@"
