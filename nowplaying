@@ -93,15 +93,21 @@ get_conf() {
     NP_PLEX_HOST=""
     NP_PLEX_PORT=""
     NP_PLEX_TOKEN="" 
+    NP_MAX_WIDTH=""
+    NP_COLOR_MODE=""
 
     if [ -r "$__conffile" ]; then
        while IFS='=' read -r key val; do
             # Skip over lines containing comments.
             [ "${key##\#*}" ] || continue
               case "$key" in
+
                   NP_PLEX_HOST) plex_host="$val" ;;
                   NP_PLEX_PORT) plex_port="$val" ;;
                  NP_PLEX_TOKEN) plex_token="$val" ;;
+                  NP_MAX_WIDTH) max_width="$val" ;;
+                 NP_COLOR_MODE) color="$val" ;;
+
               esac
           done < "$__conffile"
     fi
@@ -463,12 +469,11 @@ parse_server_xml() {
     while IFS= read -r line; do
         case "$line" in
             *"401 Unauthorized"*)
+                    log_error "Unauthorized access to $__host. (Error code: 401)"
                 if [ -n "$plex_token" ]; then
-                    log_error "Unauthorized access to $__host. \
-                        Check your PLEX AUTH TOKEN. (Error code: 401)"
+                    printf "Invalid PLEX AUTH TOKEN.\n"
                 else
-                    log_error "Unauthorized access to $__host. \
-                        Try using a PLEX AUTH TOKEN. (Error code: 401)"
+                    printf "See the README on how to get a PLEX AUTH TOKEN.\n"
                 fi
                 exit 1
                 ;;
@@ -614,7 +619,7 @@ EOF
 
 main() {
     # Check for conf file first so command args may override
-    check_coni
+    check_conf
 
     while [ "$#" -gt 0 ]; do
         case "$1" in 
