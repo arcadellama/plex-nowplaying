@@ -81,6 +81,25 @@ song_color="$magenta"
 transcode_color="$green"
 
 ## Functions
+get_conf() {
+    ## Global configuration options
+    NP_PLEX_HOST=""
+    NP_PLEX_PORT=""
+    NP_PLEX_TOKEN="" 
+
+    if [ -r "$config_file" ]; then
+       while IFS='=' read -r key val; do
+            # Skip over lines containing comments.
+            [ "${key##\#*}" ] || continue
+              case "$key" in
+                  NP_PLEX_HOST) plex_host="$val" ;;
+                  NP_PLEX_PORT) plex_port="$val" ;;
+                 NP_PLEX_TOKEN) plex_token="$val" ;;
+              esac
+          done < "$config_file"
+    fi
+}
+
 print_help() {
 cat <<EOF
 
@@ -92,7 +111,7 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
 
            --help, -h   This screen
 
-  --config, -c <file>   Configuration file.
+  --config, -c <file>   Configuration file. Overrides command args.
 
       --plex, -p <ip>   IP address(es) or domain name of Plex Server
                         separated by commas, no spaces.
@@ -137,40 +156,6 @@ no_server_error() {
         printf "[%s]: Plex server not not found at %s. (Error code: %s)\n"\
             "$prgnam" "$plex_host" "$__ret"
     fi
-}
-
-get_conf() {
-    __conf="$1"
-    if [ -r "$config_file" ]; then
-       while IFS='=' read -r key val; do
-            # Skip over lines containing comments.
-            [ "${key##\#*}" ] || continue
-              case "$key" in
-                    "$__conf")
-                       printf "%s\n" "$val"
-                       return
-                       ;;
-              esac
-          done < "$config_file"
-       return 1
-   fi
-
-
-check_conf() {
-    __test_var=""
-    if [ -n "$config_file" ]; then
-       for __conf in plex_host plex_port plex_token; do
-           if __test_var="$(get_conf "$__conf")"; then
-              eval "$__conf=$__test_var"
-           fi
-       done
-    fi
-}
- 
-
-get_token() {
-    __tokenfile="$1"
-    cat "$__tokenfile"
 }
 
 dependency_check() {
@@ -259,8 +244,6 @@ truncate_string() {
     # Input variables
     __string="$1"
     __width="$2"
-
-    # Local variables
     __count="$(((${#__string} - __width) + 3))" # 3 additional for elipses
 
     while [ "$__count" -gt 0 ]; do
@@ -272,11 +255,8 @@ truncate_string() {
 }
 
 print_delim() {
-    # Input variables
     __word="$1"
     __width="$2"
-
-    # local variables
     __count=$((__width - __word))
 
     while [ "$__count" -gt 0 ]; do
@@ -286,11 +266,9 @@ print_delim() {
 }
 
 fix_apostrophe() {
-    # Input Variable
     __input="$1"
-
-    # Local variables
     __oldIFS=$IFS
+    set -f
     IFS='&'
     # shellcheck disable=2086
     set -- ${__input}
@@ -303,6 +281,7 @@ fix_apostrophe() {
             printf "%s" "$1"
             ;;
     esac
+    set +f
 }
 
 download_xml() {
@@ -331,8 +310,15 @@ download_xml() {
                 "$dl_agent" -w "$timeout" "$__host" "$plex_port"
              return "$?"
             ;;
+          *bash)
+              echo "Shell env is $SHELL"
+            #printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
+            #    "$dl_agent" -w "$timeout" "$__host" "$plex_port"
+             return "$?"
+            ;;
         esac
 }
+
 get_plexml() {
     ## Input variables passed from main()
     __type="$1" # either server or session
@@ -489,7 +475,7 @@ print_nowplaying() {
 }
 
 parse_server_xml() {
-    # Input variable
+    # Input variable from main
     __server_xml="$1"
     while IFS= read -r line; do
         case "$line" in
@@ -504,13 +490,12 @@ EOF
 }
 
 parse_session_xml() {
-    # Input variable
+    # Input variable from main
     __session_xml="$1"
 
     # Local variables
     __welcome_msg="Now Playing on $friendly_name: "
     __user="local" # Defaults to local for non-plex accounts
-
     __title=""
     __album=""
     __type=""
@@ -593,12 +578,8 @@ main() {
                 plex_port="$2"
                 shift 2 ;;
         --token|-t)
-                if [ -r "$2" ]; then
-                   plex_token="$(get_token "$2")"
-               else
                    plex_token="$2"
-                fi
-                shift 2 ;;
+                   shift 2 ;;
          --timeout)
                 timeout="$2"
                 shift 2 ;;
@@ -713,7 +694,9 @@ main() {
     done
 
     # Check for environment variables, config file
-    check_conf
+    if [ -n "$config_file" ]; then
+        get_conf
+    fi
 
     # Check for and set download agent
     dependency_check || exit 1

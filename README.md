@@ -30,45 +30,55 @@ See "Configuration" below for more options.
 
 I have put it in my .bashrc for the screenshot seen above.
 
-### Configuration
+### Usage
 
-    Example: '"$nowplaying" -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>
-         
-                  --plex, -p    IP address(es) or domain name of Plex Server
-                                separated by commas, no spaces.
-                                Default=127.0.0.1
+    Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
+    
+               --help, -h   This screen
+    
+      --config, -c <file>   Configuration file. Overrides command args.
+      
+          --plex, -p <ip>   IP address(es) or domain name of Plex Server
+                            separated by commas, no spaces.
+                            Default=127.0.0.1
+    
+           --port <number>   Plex port (default: 32400)
+    
+        --token, -t <path>   Plex Auth Token, optional point to file.
+    
+         --timeout <value>   Time to wait for connection, default=1
+    
+          --color <on|off>   Color setting. Default is to attempt to discover
+                             your terminal settings and set accordingly.
+    
+      --width, -w <number>   Maximum number of columns width.
+                             Default=0, "infinite"
+    
+             --version, -v  Show version
+    
+             --curl <path>  Force curl as downloader.
+                            (Path is optional.)
+    
+             --wget <path>  Force wget as downloader.
+                            (Path is optional.)
+    
+            --fetch <path>   Force fetch as downloader.
+                             (Path is optional.)
+    
+      --netcat,--nc <path>   Force netcat (nc) as downloader.
+                             (Path is optional.)
+     
+                 --verbose   Print every error message.
+    
+                    --file   Point to a XML file for debugging
+    
+## Configuration File
+Your Plex Server IP and Tokens probably shouldn't be version controlled for the world to see. You can create a configuration file, example is given at nowplaying.conf.sample, and use the "--config </path/to/file>"
 
-                       --port   Plex port (default: 32400)
-
-                  --token, -t   Plex Auth Token
-
-            --timeout <value>   Time to wait for connection, default=1
-
-                  --width, -w   Maximum number of columns width.
-                                Default=0, "infinite"
-
-             --color <on|off>   Color setting. Default is to attempt to discover
-                                your terminal settings and set accordingly.
-
-                   --help, -h   This screen
-
-                --version, -v   Show version
-
-                --curl <path>   Force curl as downloader.
-                                (Path is optional.)
-
-                --wget <path>   Force wget as downloader.
-                                (Path is optional.)
-
-               --fetch <path>   Force fetch as downloader.
-                                (Path is optional.)
-                          
-         --netcat,--nc <path>   Force netcat (nc) as downloader.
-                                (Path is optional.)
-
-                    --verbose   Print every error message.
-
-                       --file   Point to a XML file for debugging
+Current options are:
+    NP_PLEX_HOST=0.0.0.0
+    NP_PLEX_PORT=32400
+    NP_PLEX_TOKEN=xxxxxxxx
 
 ### Why can you add more than one Plex host?
 This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.
