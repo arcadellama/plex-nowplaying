@@ -1,0 +1,4 @@
+# Sample config for plex-nowplaying
+NP_PLEX_HOST=127.0.0.1
+NP_PLEX_PORT=32400
+NP_PLEX_TOKEN=xxxxxxxxxx

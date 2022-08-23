@@ -29,19 +29,20 @@ export LC_ALL=C
 
 ## Global Read-only Variables
 prgnam="plex-nowplaying"
-version="1.3.1"
+version="1.3.2"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
 plex_port="32400"               # Default port for Plex server
+plex_token=""                   # Auth token for Plex
+config_file=""                  # Location for configuration file
 max_width="0"                   # Set the maximum width of print; 0=infinite
 dot_leader="."                  # Delimiter used for dot leader
 color=""                        # Toggle color output--default is "auto"
 verbose=""                      # Chatty version
-dl_agent=""                     # Either curl, wget, or fetch
+dl_agent=""                     # Either curl, wget, fetch or nc
 skip_checks=""                  # Skip dependency checks
 plex_file=""                    # Optional XML for testing
-plex_token=""                   # Auth token for Plex
 timeout=1                       # Timeout for downloading xml file
 
 ## Global accessible variables
@@ -80,6 +81,25 @@ song_color="$magenta"
 transcode_color="$green"
 
 ## Functions
+get_conf() {
+    ## Global configuration options
+    NP_PLEX_HOST=""
+    NP_PLEX_PORT=""
+    NP_PLEX_TOKEN="" 
+
+    if [ -r "$config_file" ]; then
+       while IFS='=' read -r key val; do
+            # Skip over lines containing comments.
+            [ "${key##\#*}" ] || continue
+              case "$key" in
+                  NP_PLEX_HOST) plex_host="$val" ;;
+                  NP_PLEX_PORT) plex_port="$val" ;;
+                 NP_PLEX_TOKEN) plex_token="$val" ;;
+              esac
+          done < "$config_file"
+    fi
+}
+
 print_help() {
 cat <<EOF
 
@@ -88,31 +108,33 @@ A command-line script to print the "Now Playing" status of
 a Plex server to stdout.
 
 Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
-         
-          --plex, -p    IP address(es) or domain name of Plex Server
-                        separated by commas, no spaces.
-                        Default=127.0.0.1
-
-          --token, -t   Plex Auth Token
-
-    --timeout <value>   Time to wait for connection, default=1
-
-               --port   Plex port (default: 32400)
-
-          --width, -w   Maximum number of columns width.
-                        Default=0, "infinite"
-
-     --color <on|off>   Color setting. Default is to attempt to discover
-                        your terminal settings and set accordingly.
 
            --help, -h   This screen
 
-        --version, -v   Show version
+  --config, -c <file>   Configuration file. Overrides command args.
 
-        --curl <path>   Force curl as downloader.
+      --plex, -p <ip>   IP address(es) or domain name of Plex Server
+                        separated by commas, no spaces.
+                        Default=127.0.0.1
+
+       --port <number>   Plex port (default: 32400)
+
+    --token, -t <path>   Plex Auth Token, optional point to file.
+
+     --timeout <value>   Time to wait for connection, default=1
+
+      --color <on|off>   Color setting. Default is to attempt to discover
+                         your terminal settings and set accordingly.
+
+  --width, -w <number>   Maximum number of columns width.
+                         Default=0, "infinite"
+
+         --version, -v  Show version
+
+         --curl <path>  Force curl as downloader.
                         (Path is optional.)
 
-        --wget <path>   Force wget as downloader.
+         --wget <path>  Force wget as downloader.
                         (Path is optional.)
 
         --fetch <path>   Force fetch as downloader.
@@ -124,6 +146,7 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
              --verbose   Print every error message.
 
                 --file   Point to a XML file for debugging
+
 EOF
 }
 
@@ -221,8 +244,6 @@ truncate_string() {
     # Input variables
     __string="$1"
     __width="$2"
-
-    # Local variables
     __count="$(((${#__string} - __width) + 3))" # 3 additional for elipses
 
     while [ "$__count" -gt 0 ]; do
@@ -234,11 +255,8 @@ truncate_string() {
 }
 
 print_delim() {
-    # Input variables
     __word="$1"
     __width="$2"
-
-    # local variables
     __count=$((__width - __word))
 
     while [ "$__count" -gt 0 ]; do
@@ -248,11 +266,9 @@ print_delim() {
 }
 
 fix_apostrophe() {
-    # Input Variable
     __input="$1"
-
-    # Local variables
     __oldIFS=$IFS
+    set -f
     IFS='&'
     # shellcheck disable=2086
     set -- ${__input}
@@ -265,6 +281,7 @@ fix_apostrophe() {
             printf "%s" "$1"
             ;;
     esac
+    set +f
 }
 
 download_xml() {
@@ -293,8 +310,15 @@ download_xml() {
                 "$dl_agent" -w "$timeout" "$__host" "$plex_port"
              return "$?"
             ;;
+          *bash)
+              echo "Shell env is $SHELL"
+            #printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
+            #    "$dl_agent" -w "$timeout" "$__host" "$plex_port"
+             return "$?"
+            ;;
         esac
 }
+
 get_plexml() {
     ## Input variables passed from main()
     __type="$1" # either server or session
@@ -451,7 +475,7 @@ print_nowplaying() {
 }
 
 parse_server_xml() {
-    # Input variable
+    # Input variable from main
     __server_xml="$1"
     while IFS= read -r line; do
         case "$line" in
@@ -466,13 +490,12 @@ EOF
 }
 
 parse_session_xml() {
-    # Input variable
+    # Input variable from main
     __session_xml="$1"
 
     # Local variables
     __welcome_msg="Now Playing on $friendly_name: "
     __user="local" # Defaults to local for non-plex accounts
-
     __title=""
     __album=""
     __type=""
@@ -541,6 +564,13 @@ EOF
 main() {
     while [ "$#" -gt 0 ]; do
         case "$1" in 
+       --config|-c)
+                if [ ! -r "$2" ]; then
+		        printf "[%s]: %s config file not found.\n" "$prgnam" "$2"
+                exit 1
+                fi
+                config_file="$2"
+                shift 2 ;;
          --plex|-p)
                 plex_host="$2"
                 shift 2 ;;
@@ -548,8 +578,8 @@ main() {
                 plex_port="$2"
                 shift 2 ;;
         --token|-t)
-                plex_token="$2"
-                shift 2 ;;
+                   plex_token="$2"
+                   shift 2 ;;
          --timeout)
                 timeout="$2"
                 shift 2 ;;
@@ -662,6 +692,11 @@ main() {
                 exit 1 ;;
         esac
     done
+
+    # Check for environment variables, config file
+    if [ -n "$config_file" ]; then
+        get_conf
+    fi
 
     # Check for and set download agent
     dependency_check || exit 1
