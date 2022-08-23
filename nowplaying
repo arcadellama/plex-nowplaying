@@ -29,7 +29,7 @@ export LC_ALL=C
 
 ## Global Read-only Variables
 prgnam="plex-nowplaying"
-version="1.3.2"
+version="1.3.3"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
@@ -51,6 +51,10 @@ server_path="/"                 # Base path for plex API
 session_path="status/sessions"  # Path for sessions API
 token_arg="?X-Plex-Token="      # Plex token arg
 session_count=0                 # Toggle for active session
+
+# Search paths for config file
+conf_path="$HOME/.nowplayingrc $HOME/.config/nowplaying.conf \
+    /usr/local/etc/nowplaying.conf /etc/nowplaying.conf"
 
 ## Global display variables
 hw_transcode_symbol="•"         # Symbol to show hardware transcode
@@ -99,6 +103,24 @@ get_conf() {
           done < "$config_file"
     fi
 }
+
+check_conf() {
+    __conf=""
+    # disable globbing
+    set -f
+    # shellcheck disable=2086
+    set -- ${conf_path}
+    for __conf in "$@"; do
+        if [ -r "$__conf" ]; then
+            config_file="$__conf"
+            set +f
+            return 0
+        fi
+    done
+    set +f
+    return 1
+}
+
 
 print_help() {
 cat <<EOF
@@ -310,12 +332,6 @@ download_xml() {
                 "$dl_agent" -w "$timeout" "$__host" "$plex_port"
              return "$?"
             ;;
-          *bash)
-              echo "Shell env is $SHELL"
-            #printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
-            #    "$dl_agent" -w "$timeout" "$__host" "$plex_port"
-             return "$?"
-            ;;
         esac
 }
 
@@ -477,6 +493,7 @@ print_nowplaying() {
 parse_server_xml() {
     # Input variable from main
     __server_xml="$1"
+    __host="$2" # not currently used,
     while IFS= read -r line; do
         case "$line" in
             *friendlyName*)
@@ -492,6 +509,7 @@ EOF
 parse_session_xml() {
     # Input variable from main
     __session_xml="$1"
+    __host="$2"
 
     # Local variables
     __welcome_msg="Now Playing on $friendly_name: "
@@ -557,11 +575,14 @@ parse_session_xml() {
 EOF
 
      if [ -n "$verbose" ] && [ "$__count" -eq 0 ]; then
-         printf "Nothing playing on Plex.\n"
+         printf "Nothing playing on %s (%s)\n" "$friendly_name" "$__host"
      fi
 }
 
 main() {
+    # Check for conf file first so command args may override
+    check_conf
+
     while [ "$#" -gt 0 ]; do
         case "$1" in 
        --config|-c)
@@ -714,8 +735,8 @@ main() {
     for __host in "$@"; do
         if __server_xml="$(get_plexml "server" "$__host")"; then
             __session_xml="$(get_plexml "session" "$__host")"
-            parse_server_xml "$__server_xml"
-            parse_session_xml "$__session_xml"
+            parse_server_xml "$__server_xml" "$__host"
+            parse_session_xml "$__session_xml" "$__host"
             return
         else
             __retval="$?"
