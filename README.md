@@ -75,10 +75,11 @@ I have put it in my .bashrc for the screenshot seen above.
 ## Configuration File
 Your Plex Server IP and Tokens probably shouldn't be version controlled for the world to see. You can create a configuration file, example is given at nowplaying.conf.sample, and use the "--config </path/to/file>"
 
-Current options are:
-    NP_PLEX_HOST=0.0.0.0
-    NP_PLEX_PORT=32400
-    NP_PLEX_TOKEN=xxxxxxxx
+Current options are:  
+
+    NP_PLEX_HOST=0.0.0.0  
+    NP_PLEX_PORT=32400  
+    NP_PLEX_TOKEN=xxxxxxxx  
 
 ### Why can you add more than one Plex host?
 This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.
@@ -100,4 +101,4 @@ By default, the script will only show a result if it finds a Plex server with me
 - [x] Fix exit codes
 - [x] Add netcat (nc) as a default download agent
 - [x] Add global timeout variable for download agent
-- [ ] Add an option for external config file and/or environment variables
+- [x] Add an option for external config file and/or environment variables
