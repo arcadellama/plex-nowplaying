@@ -598,7 +598,7 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
   --netcat,--nc <path>   Force netcat (nc) as downloader.
                          (Path is optional.)
  
-             --verbose   Print every error message.
+         --verbose, -V   Print every error message.
 
                 --file   Point to a XML file for debugging
 
@@ -614,7 +614,7 @@ EOF
 
 main() {
     # Check for conf file first so command args may override
-    check_conf
+    check_coni
 
     while [ "$#" -gt 0 ]; do
         case "$1" in 
@@ -728,7 +728,7 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
-         *verbose)
+      *verbose|-V)
                 verbose="1"
                 shift 1 ;;
          *help|-h)

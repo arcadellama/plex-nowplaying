@@ -68,7 +68,7 @@ I have put it in my .bashrc for the screenshot seen above.
       --netcat,--nc <path>   Force netcat (nc) as downloader.
                              (Path is optional.)
      
-                 --verbose   Print every error message.
+             --verbose, -V   Print every error message.
     
                     --file   Point to a XML file for debugging
     
