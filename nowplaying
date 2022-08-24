@@ -29,7 +29,7 @@ export LC_ALL=C
 
 ## Global Read-only Variables
 prgnam="plex-nowplaying"
-version="1.3.4"
+version="current"
 
 ## Optional command-line variables
 plex_host="127.0.0.1"           # Plex server IP(s), separated by space
@@ -178,8 +178,8 @@ dependency_check() {
         if [ -x "$dl_agent" ]; then
             return 0
         else
-            log_error "Cannot find a download agent. \
-            Is curl, wget, fetch, or nc (ncat,netcat) installed?"
+            log_error "$(printf "%s" "Download agent not found. " \
+                "Is curl, wget, fetch, or nc installed?")"
             return 1
         fi
     fi
@@ -469,11 +469,12 @@ parse_server_xml() {
     while IFS= read -r line; do
         case "$line" in
             *"401 Unauthorized"*)
-                    log_error "Unauthorized access to $__host. (Error code: 401)"
+                __errorMessage="Unauthorized access to $__host. "
                 if [ -n "$plex_token" ]; then
-                    printf "Invalid PLEX AUTH TOKEN.\n"
+                    log_error "$__errorMessage Invalid PLEX AUTH TOKEN."
                 else
-                    printf "See the README on how to get a PLEX AUTH TOKEN.\n"
+                    log_error "$__errorMessage $(printf "%s" \
+                        "See the README on how to get a PLEX AUTH TOKEN")"
                 fi
                 exit 1
                 ;;
@@ -743,8 +744,9 @@ main() {
                 printf "%s: %s\n" "$prgnam" "$version"
                 exit 0 ;;
                  *)
-	            log_error "$1 is not a valid expression. \
-                    Try nowplaying --help for help."
+                log_error "$(printf "%s %s%s" "$1" \
+                    "is not a valid expression. "\
+                    "Try nowplaying --help for help.")"
                 exit 1 ;;
         esac
     done
@@ -779,7 +781,7 @@ main() {
     done
 
     if [ -n "$verbose" ]; then
-        log_error "No server found at $plex_host. (Error code: $__retval)"
+        log_error "No server found at $plex_host (Error code: $__retval)"
     fi
     return "$__retval"
 }
