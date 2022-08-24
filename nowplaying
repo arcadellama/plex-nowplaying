@@ -779,7 +779,7 @@ main() {
     done
 
     if [ -n "$verbose" ]; then
-        log_error "No server found at $plex_host. (Error code: $__retval)"
+        log_error "No server found at $plex_host (Error code: $__retval)"
     fi
     return "$__retval"
 }
