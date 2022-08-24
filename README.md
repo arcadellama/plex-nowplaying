@@ -96,6 +96,9 @@ This is for checking the same host that might have a different address, dependin
 ### What does verbose do?
 By default, the script will only show a result if it finds a Plex server with media playing. 'Verbose' mode will tell you why nothing was printed on screen, either because your Plex server has nothing playing, or because it can't be reached.
 
+### Known Issues
+Providing an incorrect PLEX AUTH TOKEN on a local server or from an IP range that is allowed to access without authorization with too low of a "timeout" option (the default is "1"), you may get an incorrect error report that the server is "unavailable." You can resolve this by either setting a higher "timeout" with "-t 10", not giving a PLEX AUTH TOKEN, or simply using the correct PLEX AUTH TOKEN.
+
 ### Exit Codes
 -   0     Everything works
 -   1     Something went wrong
