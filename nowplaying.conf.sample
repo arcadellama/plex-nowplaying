@@ -15,6 +15,7 @@
 # You may need your Plex Auth Token to access a remote database.
 # Instructions on how to find this is here:
 # https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+# Hint: Do not add extra quotes '"' around the key
 #
 # NP_PLEX_TOKEN=""
 
