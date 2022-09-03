@@ -1,4 +1,4 @@
-# Sample config for plex-nowplaying
+# Sample config for plex-nowplaying-cli
 
 # IP address or FQDN for the Plex Server. More than one can be declared
 # separated by a comma. The script will stop at the first responsive server
@@ -24,9 +24,9 @@
 # if it's less than this number, it will override the the maximum width.
 # Default is '0' which is the same as 'auto' or 'infinite.'
 #
-# NP_MAX_WIDTH=0
+# NP_PLEX_MAX_WIDTH=0
 
 # Color output mode. Options are: on, off, auto.
 # Default is 'auto'.
 #
-# NP_COLOR_MODE=auto
+# NP_PLEX_COLOR_MODE=auto
