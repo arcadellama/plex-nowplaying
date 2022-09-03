@@ -1,4 +1,4 @@
-# Sample config for plex-nowplaying
+# Sample config for plex-nowplaying-cli
 
 # IP address or FQDN for the Plex Server. More than one can be declared
 # separated by a comma. The script will stop at the first responsive server
@@ -15,6 +15,7 @@
 # You may need your Plex Auth Token to access a remote database.
 # Instructions on how to find this is here:
 # https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+# Hint: Do not add extra quotes '"' around the key
 #
 # NP_PLEX_TOKEN=""
 
@@ -23,9 +24,9 @@
 # if it's less than this number, it will override the the maximum width.
 # Default is '0' which is the same as 'auto' or 'infinite.'
 #
-# NP_MAX_WIDTH=0
+# NP_PLEX_MAX_WIDTH=0
 
 # Color output mode. Options are: on, off, auto.
 # Default is 'auto'.
 #
-# NP_COLOR_MODE=auto
+# NP_PLEX_COLOR_MODE=auto
