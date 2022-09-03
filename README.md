@@ -86,9 +86,9 @@ Current configurable options are:
     NP_PLEX_HOST=127.0.0.1
     NP_PLEX_PORT=32400  
     NP_PLEX_TOKEN=xxxxxxxx  
-    NP_TIMEOUT=1
-    NP_MAX_WIDTH=80
-    NP_COLOR_MODE=auto
+    NP_PLEX_TIMEOUT=1
+    NP_PLEX_MAX_WIDTH=80
+    NP_PLEX_COLOR_MODE=auto
 
 ### Why can you add more than one Plex host?
 This is for checking the same host that might have a different address, depending on your setting. E.g., on a notebook you might have both a LAN address and also the Wireguard address. **It is not intended to poll more than one Plex server at a time.** While you certainly could, the script will stop once it finds a working Plex server.

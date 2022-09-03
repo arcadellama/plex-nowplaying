@@ -19,6 +19,11 @@
 #
 # NP_PLEX_TOKEN=""
 
+# Number of ms (or seconds, depending on the protocol) to wait before
+# timeout
+#
+# NP_PLEX_TIMEOUT=1
+
 # This is the maximum number of columns you want it to span.
 # plex-nowplaying will attempt to discover the number of columns avaiable,
 # if it's less than this number, it will override the the maximum width.

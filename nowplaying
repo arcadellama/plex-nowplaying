@@ -94,6 +94,7 @@ get_conf() {
     NP_PLEX_HOST=""
     NP_PLEX_PORT=""
     NP_PLEX_TOKEN="" 
+    NP_PLEX_TIMEOUT=""
     NP_PLEX_MAX_WIDTH=""
     NP_PLEX_COLOR_MODE=""
 
@@ -106,6 +107,7 @@ get_conf() {
                   NP_PLEX_HOST) plex_host="$val" ;;
                   NP_PLEX_PORT) plex_port="$val" ;;
                   NP_PLEX_TOKEN) plex_token="$val" ;;
+                  NP_PLEX_TIMEOUT) timeout="$val" ;;
                   NP_PLEX_MAX_WIDTH) max_width="$val" ;;
                   NP_PLEX_COLOR_MODE) color="$val" ;;
                   # Legacy compatibility
