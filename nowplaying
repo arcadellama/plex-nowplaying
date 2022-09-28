@@ -325,7 +325,7 @@ download_xml() {
     __path="$2"
 
     # Local variable
-    __url="http://${__host}${__path}"
+    __url="${__host}${__path}"
 
     case "$dl_agent" in
         *curl)
@@ -517,7 +517,7 @@ parse_server_xml() {
                 exit 1
                 ;;
             *friendlyName*)
-                friendly_name="$(get_item "friendlyName" "$line")"
+                get_item "friendlyName" "$line"
                 return
                 ;;
         esac
@@ -845,9 +845,10 @@ main() {
                 log_warn "Missing port in uri, e.g.,'$__host:32400'" 
                 continue
             fi
-            if __server_xml="$(download_xml "${__host}/")"; then
-                __session_xml="$(download_xml "$__host/status/sessions")"
-                parse_server_xml "$__server_xml" "$__host"
+            __server_xml="$(download_xml "${__host}/")"
+            __session_xml="$(download_xml "$__host/status/sessions")"
+
+            if friendly_name="$(parse_server_xml "$__server_xml")"; then
                 parse_session_xml "$__session_xml" "$__host"
                 __servers_found=$((__servers_found+1))
                 break
