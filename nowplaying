@@ -37,10 +37,15 @@ NP_VERSION="current"
 NP_CONFIG_FILENAME="${NP_PRGNAM}.conf"
 NP_DEFAULT_CONFIGS="
 ${HOME}/.config/${NP_CONFIG_FILENAME}
-${HOME}/.local/{$NP_PRGNAM}/${NP_CONFIG_FILENAME
+${HOME}/.local/{$NP_PRGNAM}/${NP_CONFIG_FILENAME}
 /usr/local/etc/${NP_CONFIG_FILENAME}
 /etc/${NP_CONFIG_FILENAME}
 "
+
+## Global Log Variables
+NP_LOG=""
+NP_LOG_WARN=""
+NP_LOG_ERROR=""
 
 ########################################################################
 ## Global Configurable Vars
@@ -85,6 +90,17 @@ NP_LOG_WARN_COLOR="$TYELLOW"
 NP_LOG_ERROR_COLOR="$TRED"
 
 ########################################################################
+## Print the logs on EXIT
+########################################################################
+trap '{
+if [ -n "$verbose" ]; then
+    [ -n "$NP_LOG" ] && printf "%s\n" "$NP_LOG" 
+    [ -n "$NP_LOG_WARN" ] && printf "%s\n" "$NP_LOG_WARN" >&2
+fi
+[ -n "$NP_LOG_ERROR" ] && printf "%s\n" "$NP_LOG_ERROR" >&2
+}' EXIT
+
+########################################################################
 ## String Manipulation Functions
 ########################################################################
 
@@ -126,40 +142,52 @@ set_color() {
     printf "%s" "$__item"
 }
 
+list_add() {
+    __var="$1"
+    __val="$2"
+    if [ -z "$__var" ]; then
+        printf "%s" "$__val"
+    else
+        printf "%s\n%s" "$__var" "$__val"
+    fi
+}
+
 log() {
     __message="$1"  # Input variable
     __prefix="[$NP_PRGNAM]: "
+    __output=""
 
     if color_check; then
-        set_color "$__prefix" "$NP_LOG_COLOR" "$TBOLD"
-    else
-        printf "%s" "$__prefix"
+        __prefix="$(set_color "$__prefix" "$NP_LOG_COLOR" "$TBOLD")"
     fi
-    printf "%s\n" "$__message"
+    __output="${__prefix} ${__message}"
+    NP_LOG="$(list_add "$NP_LOG" "$__output")"
 }
 
 log_warn() {
     __message="$1"  # Input variable
     __prefix="[$NP_PRGNAM] WARNING: "
+    __output=""
 
     if color_check; then
-        set_color "$__prefix" "$NP_LOG_WARN_COLOR" "$TBOLD"
-    else
-        printf "%s" "$__prefix"
+        __prefix="$(set_color "$__prefix" "$NP_LOG_WARN_COLOR" "$TBOLD")"
     fi
-    printf "%s\n" "$__message"
+
+    __output="${__prefix} ${__message}"
+    NP_LOG_WARN="$(list_add "$NP_LOG_WARN" "$__output")"
 }
 
 log_error() {
     __message="$1"  # Input variable
     __prefix="[$NP_PRGNAM] ERROR: "
+    __output=""
 
     if color_check; then
-        set_color "$__prefix" "$NP_LOG_ERROR_COLOR" "$TBOLD"
-    else
-        printf "%s" "$__prefix"
+        __prefix="$(set_color "$__prefix" "$NP_LOG_ERROR_COLOR" "$TBOLD")"
     fi
-    printf "%s\n" "$__message"
+
+    __output="${__prefix} ${__message}"
+    NP_LOG_ERROR="$(list_add "$NP_LOG_ERROR" "$__output")"
 }
 
 get_dl_agent() {
@@ -167,8 +195,7 @@ get_dl_agent() {
         if [ -x "$dl_agent" ]; then
             return 0
         else
-            log_error "$(printf "%s" "Download agent not found. " \
-                "Is curl, wget, fetch, or nc installed?")"
+            log_error "Download agent not found. [$dl_agent]"
             return 1
         fi
     fi
@@ -542,9 +569,7 @@ parse_session_xml() {
 "$__session_xml"
 EOF
 
-     if [ -n "$verbose" ] && [ "$__count" -eq 0 ]; then
-         log "Nothing playing on $friendly_name ($__host)"
-     fi
+     log "Nothing playing on $friendly_name ($__host)"
 }
 
 print_help() {
@@ -608,7 +633,7 @@ arg_add() {
     __var="$1"
     __arg="$2"
     __val="$3"
-    if [ -z "$__var" ];
+    if [ -z "$__var" ]; then
         printf "%s %s\n" "$__arg" "$__val"
     else
         printf "%s%s %s\n" "$__var" "$__arg" "$__val"
@@ -633,38 +658,33 @@ file_exists() {
 parse_conf() {
     __conffile="$1"
     __return=""
-    if [ -r "$__conffile" ]; then
-        old_ifs=$IFS
-        while IFS='=' read -r key val; do
-            # Skip over lines containing comments.
-            [ "${key##\#*}" ] || continue
-              case "$key" in
-                  NP_PLEX_HOST) __return="$(arg_add "-p" "$val")" ;;
-                  NP_PLEX_PORT) __return="$(arg_add "--port" "$val")" ;;
-                  NP_PLEX_TOKEN) __return="$(arg_add "-t" "$val")" ;;
-                  NP_MAX_WIDTH) __return="$(arg_add "-w" "$val")" ;;
-                  NP_COLOR_MODE) __return="$(arg_add "-c" "$val")" ;;
-              esac
-        done < "$__conffile"
-        IFS=$old_ifs
-        printf "%s\n" "$__return"
-    else
-        log_error "$__conffile not found."
-        return 1
-    fi
+    old_ifs=$IFS
+    while IFS='=' read -r key val; do
+        # Skip over lines containing comments.
+        [ "${key##\#*}" ] || continue
+        case "$key" in
+            NP_PLEX_HOST) __return="$(arg_add "-p" "$val")" ;;
+            NP_PLEX_PORT) __return="$(arg_add "--port" "$val")" ;;
+            NP_PLEX_TOKEN) __return="$(arg_add "-t" "$val")" ;;
+            NP_MAX_WIDTH) __return="$(arg_add "-w" "$val")" ;;
+            NP_COLOR_MODE) __return="$(arg_add "-c" "$val")" ;;
+        esac
+     done < "$__conffile"
+     IFS=$old_ifs
+     printf "%s\n" "$__return"
 }
 
 main() {
-    command_args="$@"
-
+    command_args="$1"
+    
     ## Optional command-line variables
     plex_host="127.0.0.1"           # Plex server IP(s), separated by space
     plex_port="32400"               # Default port for Plex server
     plex_token=""                   # Auth token for Plex
+    color=""                        # Toggle color output--default is "auto"
     config_file=""                  # Location for configuration file
     max_width="0"                   # Set the maximum width of print; 0=inf
     dot_leader="."                  # Delimiter used for dot leader
-    color=""                        # Toggle color output--default is "auto"
     verbose=""                      # Chatty NP_VERSION
     dl_agent=""                     # Either curl, wget, fetch or nc
     skip_checks=""                  # Skip dependency checks
@@ -682,14 +702,15 @@ main() {
     __conffile=""                   # Location of config file
 
     # Check for conf file first so command args may override
-    if __conffile="$(file_exists "$NP_DEFAULT_CONFIGS")"; then
+    __conffile="$(file_exists "$NP_DEFAULT_CONFIGS")"
+    if [ -r "$__conffile" ]; then
         __conf_args="$(parse_conf "$__conffile")"
-        config_args="${__conf_args} ${config_args}"
+        command_args="${__conf_args} ${command_args}"
     fi
 
     set -f
     # shellcheck disable=2086
-    set -- $config_args
+    set -- $command_args
     while [ "$#" -gt 0 ]; do
         case "$1" in 
        --config|-c)
@@ -715,7 +736,7 @@ main() {
                 max_width="$2"
                 shift 2 ;;
         --delim|-d)
-		        printf "[%s]: --delim, -d is deprecated\n" "$NP_PRGNAM"
+		        log_warn "--delim, -d  is deprecated."
                 dot_leader="$2"
                 shift 2 ;;
            --color)
@@ -731,7 +752,7 @@ main() {
                 plex_file="$2"
                 shift 2 ;;
         --force|-f)
-		        printf "[%s]: --force is deprecated\n" "$NP_PRGNAM"
+		        log_warn "--force is deprecated."
                 skip_checks=1
                 shift 1 ;;
             --curl)
@@ -741,8 +762,7 @@ main() {
                             dl_agent="$2"
                             shift 2 
                         else
-                            printf "[%s]: Error. Cannot find %s.\n" \
-                                "$NP_PRGNAM" "$2"
+                            log_error "Cannot find $2"
                             exit 1
                         fi
                         ;;
@@ -759,8 +779,7 @@ main() {
                             dl_agent="$2"
                             shift 2 
                         else
-                            printf "[%s]: Error. Cannot find %s.\n" \
-                                "$NP_PRGNAM" "$2"
+                            log_error "Cannot find $2"
                             exit 1
                         fi ;;
                         *)
@@ -775,8 +794,7 @@ main() {
                             dl_agent="$2"
                             shift 2 
                         else
-                            printf "[%s]: Error. Cannot find %s.\n" \
-                                "$NP_PRGNAM" "$2"
+                            log_error "Cannot find $2"
                             exit 1
                         fi
                         ;;
@@ -792,8 +810,7 @@ main() {
                             dl_agent="$2"
                             shift 2 
                         else
-                            printf "[%s]: Error. Cannot find %s.\n" \
-                                "$NP_PRGNAM" "$2"
+                            log_error "Cannot find $2"
                             exit 1
                         fi
                         ;;
@@ -802,7 +819,7 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
-      --verbose|-V)
+--verbose|-V|--debug)
                 verbose="1"
                 shift 1 ;;
          --help|-h)
@@ -840,9 +857,9 @@ main() {
     # Check for and set download agent
     if [ -z "$dl_agent" ]; then
         if ! dl_agent="$(get_dl_agent)"; then
-            if [ -n "$verbose" ]; then
-                printf "%s\n" "$dl_agent"
-            fi
+            printf "%s\n" "$dl_agent"
+            return 1
+        fi
     fi
 
     # Debug mode check, simply cat the given xml file for testing
@@ -866,9 +883,7 @@ main() {
         fi
     done
 
-    if [ -n "$verbose" ]; then
-        log_error "No server found at $plex_host (Error code: $__retval)"
-    fi
+    log_error "No server found at $plex_host (Error code: $__retval)"
     return "$__retval"
 }
-main "$@"
+main "$*"
