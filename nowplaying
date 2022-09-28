@@ -54,11 +54,12 @@ NP_PLEX_TOKEN=""                   # This is the only "required" var
 NP_COLOR_MODE=""                   # On, off or auto
 NP_MAX_WIDTH=""                    # Maximum columns for stdout
 NP_PLEX_HOST=""                    # Local-use only, not API
-NP_PLEX_PORT=""                    # Local-use only, not API
+#NP_PLEX_PORT=""                    # Local-use only, not API
 
 ########################################################################
 ## Global Display Text and Color Variables
 ########################################################################
+NP_DOT_LEADER="."                  # Delimiter used for dot leader
 NP_HW_TRANSCODE_SYMBOL="•"         # Symbol to show hardware transcode
 NP_SW_TRANSCODE_SYMBOL="◦"         # Symbol to show software transcode
 
@@ -182,7 +183,7 @@ print_delim() {
     __count=$((__width - __word))
 
     while [ "$__count" -gt 0 ]; do
-        printf "%s" "$dot_leader"
+        printf "%s" "$NP_DOT_LEADER"
         __count=$((__count - 1))
     done
 }
@@ -290,8 +291,11 @@ log_error() {
 ########################################################################
 ## FUNCTIONS: Dependency and Configuration
 ########################################################################
-get_dl_agent() {
-    return 1
+check_uri() {
+    case "$1" in
+            *:*) return ;;
+              *) return 1 ;;
+    esac
 }
 
 parse_conf() {
@@ -303,7 +307,6 @@ parse_conf() {
         [ "${key##\#*}" ] || continue
         case "$key" in
             NP_PLEX_HOST) __return="$(arg_add "-p" "$val")" ;;
-            NP_PLEX_PORT) __return="$(arg_add "--port" "$val")" ;;
             NP_PLEX_TOKEN) __return="$(arg_add "-t" "$val")" ;;
             NP_MAX_WIDTH) __return="$(arg_add "-w" "$val")" ;;
             NP_COLOR_MODE) __return="$(arg_add "-c" "$val")" ;;
@@ -312,7 +315,6 @@ parse_conf() {
      IFS=$old_ifs
      printf "%s\n" "$__return"
 }
-
 
 ########################################################################
 ## FUNCTIONS: Download from the API
@@ -323,7 +325,7 @@ download_xml() {
     __path="$2"
 
     # Local variable
-    __url="http://${__host}:${plex_port}${__path}"
+    __url="http://${__host}${__path}"
 
     case "$dl_agent" in
         *curl)
@@ -337,11 +339,6 @@ download_xml() {
          *fetch)
             "$dl_agent" -T "$timeout" -qO - "$__url"
             return "$?" 
-            ;;
-          *nc)
-            printf "GET %s HTTP/1.0\r\n\r\n" "$__path" | \
-                "$dl_agent" -w "$timeout" "$__host" "$plex_port"
-             return "$?"
             ;;
         esac
 }
@@ -607,17 +604,15 @@ $NP_PRGNAM, NP_VERSION $NP_VERSION
 A command-line script to print the "Now Playing" status of
 a Plex server to stdout.
 
-Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
+Example: 'nowplaying -p 192.168.1.1:32400 -w 80 -t <PLEX_AUTH_TOKEN>'
 
            --help, -h   This screen
 
   --config, -c <file>   Configuration file. Overrides command args.
 
-      --plex, -p <ip>   IP address(es) or domain name of Plex Server
-                        separated by commas, no spaces.
-                        Default=127.0.0.1
-
-       --port <number>   Plex port (default: 32400)
+      --plex, -p <ip>    Full URI with ip:port of Plex Server
+                         separated by commas, no spaces.
+                         Default=127.0.0.1:32400
 
     --token, -t <path>   Plex Auth Token, optional point to file.
 
@@ -626,33 +621,30 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
       --color <on|off>   Color setting. Default is to attempt to discover
                          your terminal settings and set accordingly.
 
-  --width, -w <number>   Maximum number of columns width.
+   --width, -w <number>  Maximum number of columns width.
                          Default=0, "infinite"
 
-         --NP_VERSION, -v  Show NP_VERSION
+          --version, -v  Show NP_VERSION
 
-         --curl <path>  Force curl as downloader.
-                        (Path is optional.)
-
-         --wget <path>  Force wget as downloader.
-                        (Path is optional.)
-
-        --fetch <path>   Force fetch as downloader.
+          --curl <path>  Force curl as downloader.
                          (Path is optional.)
 
-  --netcat,--nc <path>   Force netcat (nc) as downloader.
+          --wget <path>  Force wget as downloader.
                          (Path is optional.)
- 
+
+         --fetch <path>  Force fetch as downloader.
+                         (Path is optional.)
+
          --verbose, -V   Print every error message.
 
                 --file   Point to a XML file for debugging
 
 Configuration:
     If no --config,-c is given, nowplaying will look in:
-            ~/.nowplayingrc
-            ~/.config/nowplaying.conf
-            /usr/local/etc/nowplaying.conf
-            /etc/nowplaying.etc
+            ~/.config/$NP_PRGNAM.conf
+            ~/.local/$NP_PRGNAM/$NP_PRGNAM.conf
+            /usr/local/etc/$NP_PRGNAM.conf
+            /etc/$NP_PRGNAM.conf
 
 EOF
 }
@@ -661,16 +653,15 @@ main() {
     command_args="$1"
     
     ## Optional command-line variables
-    plex_host="127.0.0.1"           # Plex server IP(s), separated by space
-    plex_port="32400"               # Default port for Plex server
+    plex_host="127.0.0.1:32400"     # Plex server IP(s), separated by comma
+    #plex_port="32400"              # deprecated
     plex_token=""                   # Auth token for Plex
     color=""                        # Toggle color output--default is "auto"
     config_file=""                  # Location for configuration file
     max_width="0"                   # Set the maximum width of print; 0=inf
-    dot_leader="."                  # Delimiter used for dot leader
     verbose=""                      # Chatty NP_VERSION
     dl_agent=""                     # Either curl, wget, fetch or nc
-    skip_checks=""                  # Skip dependency checks
+    #skip_checks=""                 # Deprecated
     plex_file=""                    # Optional XML for testing
     timeout=1                       # Timeout for downloading xml file
     
@@ -707,6 +698,7 @@ main() {
                 plex_host="$2"
                 shift 2 ;;
             --port)
+                log_warn "--port is deprecated; use full uri for host instead"
                 plex_port="$2"
                 shift 2 ;;
         --token|-t)
@@ -717,10 +709,6 @@ main() {
                 shift 2 ;;
         --width|-w)
                 max_width="$2"
-                shift 2 ;;
-        --delim|-d)
-		        log_warn "--delim, -d  is deprecated."
-                dot_leader="$2"
                 shift 2 ;;
            --color)
                 case "$2" in
@@ -794,25 +782,6 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
-    --netcat|--nc)
-                case "$2" in
-                    *nc)
-                        if [ -x "$2" ]; then
-                            dl_agent="$2"
-                            shift 2 
-                        else
-                            log_error "Cannot find $2"
-                            exit 1
-                        fi
-                        ;;
-                        *)
-                        if ! dl_agent="$(command -v nc)"; then
-                            log_error "Cannot find nc"
-                            exit
-                        fi
-                        shift 1 ;;
-                esac
-                skip_checks=1 ;;
 --verbose|-V|--debug)
                 verbose="1"
                 shift 1 ;;
@@ -861,23 +830,37 @@ main() {
         parse_session_xml "$(cat "$plex_file")"
         return
     fi
-
-    # Cycle through the given hostnames
-    IFS=,
+    
+    __servers_found=0
+    set -f
     # shellcheck disable=2086
-    set -- ${plex_host}
-    for __host in "$@"; do
-        if __server_xml="$(get_plexml "server" "$__host")"; then
-            __session_xml="$(get_plexml "session" "$__host")"
-            parse_server_xml "$__server_xml" "$__host"
-            parse_session_xml "$__session_xml" "$__host"
-            return
-        else
-            __retval="$?"
-        fi
+    set -- $plex_host
+    for __server in "$@"; do
+        old_ifs=$IFS
+        IFS=,
+        set -- $__server
+        for __host in "$@"; do
+            if ! check_uri "$__host"; then
+                __retval="$?"
+                log_warn "Missing port in uri, e.g.,'$__host:32400'" 
+                continue
+            fi
+            if __server_xml="$(download_xml "${__host}/")"; then
+                __session_xml="$(download_xml "$__host/status/sessions")"
+                parse_server_xml "$__server_xml" "$__host"
+                parse_session_xml "$__session_xml" "$__host"
+                __servers_found=$((__servers_found+1))
+                break
+            else
+                __retval="$?"
+            fi
+        done
+        IFS=$old_ifs
     done
 
-    log_error "No server found at $plex_host (Error code: $__retval)"
-    return "$__retval"
+    if [ "$__servers_found" -eq 0 ]; then
+        log_error "No servers found at $plex_host (Error code: $__retval)"
+        return "$__retval"
+    fi
 }
 main "$*"
