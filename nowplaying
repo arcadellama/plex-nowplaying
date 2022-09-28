@@ -89,32 +89,6 @@ NP_LOG_ERROR_COLOR="$TRED"
 ########################################################################
 
 ## Functions
-get_conf() {
-    __conffile="$1"
-    ## Global configuration options
-    NP_PLEX_HOST=""
-    NP_PLEX_PORT=""
-    NP_PLEX_TOKEN="" 
-    NP_MAX_WIDTH=""
-    NP_COLOR_MODE=""
-
-    if [ -r "$__conffile" ]; then
-       while IFS='=' read -r key val; do
-            # Skip over lines containing comments.
-            [ "${key##\#*}" ] || continue
-              case "$key" in
-
-                  NP_PLEX_HOST) plex_host="$val" ;;
-                  NP_PLEX_PORT) plex_port="$val" ;;
-                 NP_PLEX_TOKEN) plex_token="$val" ;;
-                  NP_MAX_WIDTH) max_width="$val" ;;
-                 NP_COLOR_MODE) color="$val" ;;
-
-              esac
-          done < "$__conffile"
-    fi
-}
-
 color_check() {
     case "$color" in
         true|yes|on)
@@ -188,7 +162,7 @@ log_error() {
     printf "%s\n" "$__message"
 }
 
-dependency_check() {
+get_dl_agent() {
     if [ -n "$skip_checks" ]; then
         if [ -x "$dl_agent" ]; then
             return 0
@@ -200,10 +174,7 @@ dependency_check() {
     fi
 
     for __dla in curl wget fetch nc; do
-        if [ -x "$(command -v "$__dla")" ]; then
-        dl_agent="$(command -v "$__dla")"
-        return 0
-        fi
+        command -v "$__dla" && return
     done
     
     log_error "curl, wget, fetch, or nc not found."
@@ -867,7 +838,12 @@ main() {
     fi
 
     # Check for and set download agent
-    dependency_check || exit 1
+    if [ -z "$dl_agent" ]; then
+        if ! dl_agent="$(get_dl_agent)"; then
+            if [ -n "$verbose" ]; then
+                printf "%s\n" "$dl_agent"
+            fi
+    fi
 
     # Debug mode check, simply cat the given xml file for testing
     if [ -n "$plex_file" ]; then
