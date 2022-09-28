@@ -637,8 +637,6 @@ Example: 'nowplaying -p 192.168.1.1:32400 -w 80 -t <PLEX_AUTH_TOKEN>'
 
          --verbose, -V   Print every error message.
 
-                --file   Point to a XML file for debugging
-
 Configuration:
     If no --config,-c is given, nowplaying will look in:
             ~/.config/$NP_PRGNAM.conf
@@ -653,7 +651,7 @@ main() {
     command_args="$1"
     
     ## Optional command-line variables
-    plex_host="127.0.0.1:32400"     # Plex server IP(s), separated by comma
+    plex_host=""                    # Plex server IP(s), separated by comma
     #plex_port="32400"              # deprecated
     plex_token=""                   # Auth token for Plex
     color=""                        # Toggle color output--default is "auto"
@@ -662,7 +660,7 @@ main() {
     verbose=""                      # Chatty NP_VERSION
     dl_agent=""                     # Either curl, wget, fetch or nc
     #skip_checks=""                 # Deprecated
-    plex_file=""                    # Optional XML for testing
+    #plex_file=""                   # Deprecated. Optional XML for testing.
     timeout=1                       # Timeout for downloading xml file
     
     ## Global accessible variables
@@ -719,9 +717,6 @@ main() {
                         color="on"
                         shift 1 ;;
                 esac ;;
-            --file)
-                plex_file="$2"
-                shift 2 ;;
         --force|-f)
 		        log_warn "--force is deprecated."
                 skip_checks=1
@@ -807,9 +802,8 @@ main() {
             # Skip over lines containing comments.
             [ "${key##\#*}" ] || continue
               case "$key" in
-                  NP_PLEX_HOST) plex_host="$val" ;;
-                  NP_PLEX_PORT) plex_port="$val" ;;
                  NP_PLEX_TOKEN) plex_token="$val" ;;
+                  NP_PLEX_HOST) plex_host="$(list_add "$plex_host" "$val")" ;;
                   NP_MAX_WIDTH) max_width="$val" ;;
                  NP_COLOR_MODE) color="$val" ;;
               esac
@@ -825,10 +819,9 @@ main() {
         [ -x "$dl_agent" ] || log_error "curl, wget, fetch, or nc not found."
     fi
 
-    # Debug mode check, simply cat the given xml file for testing
-    if [ -n "$plex_file" ]; then
-        parse_session_xml "$(cat "$plex_file")"
-        return
+    # Try local defaults, for legacy reasons
+    if [ -z "$plex_host" ]; then
+        plex_host="127.0.0.1:32400,localhost:32400"
     fi
     
     __servers_found=0
