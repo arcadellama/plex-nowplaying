@@ -27,65 +27,57 @@
 
 export LC_ALL=C
 
+########################################################################
 ## Global Read-only Variables
+########################################################################
+NP_PRGNAM="nowplaying-for-plex"
+NP_VERSION="current"
 
-prgnam="plex-nowplaying-cli"
-version="1.3.6"
+## Default config locations
+NP_CONFIG_FILENAME="${NP_PRGNAM}.conf"
+NP_DEFAULT_CONFIGS="
+${HOME}/.config/${NP_CONFIG_FILENAME}
+${HOME}/.local/{$NP_PRGNAM}/${NP_CONFIG_FILENAME
+/usr/local/etc/${NP_CONFIG_FILENAME}
+/etc/${NP_CONFIG_FILENAME}
+"
 
-## Optional command-line variables
-plex_host="127.0.0.1"           # Plex server IP(s), separated by space
-plex_port="32400"               # Default port for Plex server
-plex_token=""                   # Auth token for Plex
-config_file=""                  # Location for configuration file
-max_width="0"                   # Set the maximum width of print; 0=infinite
-dot_leader="."                  # Delimiter used for dot leader
-color=""                        # Toggle color output--default is "auto"
-verbose=""                      # Chatty version
-dl_agent=""                     # Either curl, wget, fetch or nc
-skip_checks=""                  # Skip dependency checks
-plex_file=""                    # Optional XML for testing
-timeout=1                       # Timeout for downloading xml file
-
-## Global accessible variables
-friendly_name="Plex"            # Default server name
-server_path="/"                 # Base path for plex API
-session_path="status/sessions"  # Path for sessions API
-token_arg="?X-Plex-Token="      # Plex token arg
-session_count=0                 # Toggle for active session
-
-# Search paths for config file
-conf_path="$HOME/.nowplayingrc $HOME/.config/nowplaying.conf \
-    /usr/local/etc/nowplaying.conf /etc/nowplaying.conf"
-
-## Global display variables
-hw_transcode_symbol="•"         # Symbol to show hardware transcode
-sw_transcode_symbol="◦"         # Symbol to show software transcode
+########################################################################
+## Global Display Text and Color Variables
+########################################################################
+NP_HW_TRANSCODE_SYMBOL="•"         # Symbol to show hardware transcode
+NP_SW_TRANSCODE_SYMBOL="◦"         # Symbol to show software transcode
 
 ## Text Color Definitions
-black="\033[30m"
-red="\033[31m"
-green="\033[32m"
-yellow="\033[33m"
-blue="\033[34m"
-magenta="\033[35m"
-cyan="\033[36m"
-white="\033[37m"
+TBLACK="\033[30m"
+TRED="\033[31m"
+TGREEN="\033[32m"
+TYELLOW="\033[33m"
+TBLUE="\033[34m"
+TMAGENTA="\033[35m"
+TCYAN="\033[36m"
+TWHITE="\033[37m"
  
 ## Text Effect Definitions
-bold="\033[1m"
-italic="\033[3m"
-underline="\033[4m"
+TBOLD="\033[1m"
+TITALIC="\033[3m"
+TUNDERLINE="\033[4m"
 
-# Reset text colors/effects
-treset="\033[m"
+## Reset text colors/effects
+TRESET="\033[m"
 
 ## Color Output Options
-movie_color="$blue"
-episode_color="$cyan"
-song_color="$magenta"
-transcode_color="$green"
-log_color="$green"
-log_error_color="$red"
+NP_MOVIE_COLOR="$TBLUE"
+NP_EPISODE_COLOR="$TCYAN"
+NP_SONG_COLOR="$TMAGENTA"
+NP_TRANSCODE_COLOR="$TGREEN"
+NP_LOG_COLOR="$TGREEN"
+NP_LOG_WARN_COLOR="$TYELLOW"
+NP_LOG_ERROR_COLOR="$TRED"
+
+########################################################################
+## String Manipulation Functions
+########################################################################
 
 ## Functions
 get_conf() {
@@ -94,9 +86,8 @@ get_conf() {
     NP_PLEX_HOST=""
     NP_PLEX_PORT=""
     NP_PLEX_TOKEN="" 
-    NP_PLEX_TIMEOUT=""
-    NP_PLEX_MAX_WIDTH=""
-    NP_PLEX_COLOR_MODE=""
+    NP_MAX_WIDTH=""
+    NP_COLOR_MODE=""
 
     if [ -r "$__conffile" ]; then
        while IFS='=' read -r key val; do
@@ -106,13 +97,9 @@ get_conf() {
 
                   NP_PLEX_HOST) plex_host="$val" ;;
                   NP_PLEX_PORT) plex_port="$val" ;;
-                  NP_PLEX_TOKEN) plex_token="$val" ;;
-                  NP_PLEX_TIMEOUT) timeout="$val" ;;
-                  NP_PLEX_MAX_WIDTH) max_width="$val" ;;
-                  NP_PLEX_COLOR_MODE) color="$val" ;;
-                  # Legacy compatibility
+                 NP_PLEX_TOKEN) plex_token="$val" ;;
                   NP_MAX_WIDTH) max_width="$val" ;;
-                  NP_COLOR_MODE) color="$val" ;;
+                 NP_COLOR_MODE) color="$val" ;;
 
               esac
           done < "$__conffile"
@@ -143,13 +130,13 @@ set_color() {
     __fx2="$4"
 
     if [ -n "$__fx2" ]; then
-        printf "%b%b%b%s%b" "$__fx1" "$__fx2" "$__color" "$__item" "$treset"
+        printf "%b%b%b%s%b" "$__fx1" "$__fx2" "$__color" "$__item" "$TRESET"
         return
     elif [ -n "$__fx1" ]; then
-        printf "%b%b%s%b" "$__fx1" "$__color" "$__item" "$treset"
+        printf "%b%b%s%b" "$__fx1" "$__color" "$__item" "$TRESET"
         return
     elif [ -n "$__color" ]; then
-        printf "%b%s%b" "$__color" "$__item" "$treset"
+        printf "%b%s%b" "$__color" "$__item" "$TRESET"
         return
     fi
     # Don't error-out if args aren't passed
@@ -158,10 +145,10 @@ set_color() {
 
 log() {
     __message="$1"  # Input variable
-    __prefix="[$prgnam]: "
+    __prefix="[$NP_PRGNAM]: "
 
     if color_check; then
-        set_color "$__prefix" "$log_color" "$bold"
+        set_color "$__prefix" "$NP_LOG_COLOR" "$TBOLD"
     else
         printf "%s" "$__prefix"
     fi
@@ -170,10 +157,10 @@ log() {
 
 log_error() {
     __message="$1"  # Input variable
-    __prefix="[$prgnam] Error: "
+    __prefix="[$NP_PRGNAM] Error: "
 
     if color_check; then
-        set_color "$__prefix" "$log_error_color" "$bold"
+        set_color "$__prefix" "$NP_LOG_ERROR_COLOR" "$TBOLD"
     else
         printf "%s" "$__prefix"
     fi
@@ -206,7 +193,7 @@ check_conf() {
     # disable globbing
     set -f
     # shellcheck disable=2086
-    set -- ${conf_path}
+    set -- ${NP_DEFAULT_CONFIGS}
     for __conf in "$@"; do
         if [ -r "$__conf" ]; then
             get_conf "$__conf"
@@ -372,7 +359,7 @@ print_nowplaying() {
 
     # Set global color
     if color_check; then
-        __transcode="$(set_color "$__transcode" "$transcode_color" "$bold")"
+        __transcode="$(set_color "$__transcode" "$NP_TRANSCODE_COLOR" "$TBOLD")"
     fi
 
     case "$__type" in
@@ -408,7 +395,7 @@ print_nowplaying() {
 
               fi
               if color_check; then
-                __output="$(set_color "$__output" "$episode_color" "$bold")"
+                __output="$(set_color "$__output" "$NP_EPISODE_COLOR" "$TBOLD")"
               fi
             ;;
 
@@ -445,7 +432,7 @@ print_nowplaying() {
 
               fi
               if color_check; then
-                __output="$(set_color "$__output" "$song_color" "$bold")"
+                __output="$(set_color "$__output" "$NP_SONG_COLOR" "$TBOLD")"
               fi
             ;;
 
@@ -460,7 +447,7 @@ print_nowplaying() {
                   "$__title $(print_delim ${#__title} ${__col2})" \
                   "$__user $__transcode")"
               if color_check; then
-                __output="$(set_color "$__output" "$movie_color" "$bold")"
+                __output="$(set_color "$__output" "$NP_MOVIE_COLOR" "$TBOLD")"
               fi
             ;;
     esac
@@ -526,9 +513,9 @@ parse_session_xml() {
             *TranscodeSession*)
                 __trans_type=$(get_item "transcodeHwFullPipeline" "$line")
                 if [ "$__trans_type" -eq 1 ]; then
-                    __transcode_symbol="$hw_transcode_symbol"
+                    __transcode_symbol="$NP_HW_TRANSCODE_SYMBOL"
                 else
-                    __transcode_symbol="$sw_transcode_symbol"
+                    __transcode_symbol="$NP_SW_TRANSCODE_SYMBOL"
                 fi
                 __transcode="$__transcode_symbol"
                 ;;
@@ -540,7 +527,7 @@ parse_session_xml() {
 
                     if color_check; then
                         __welcome_msg="$(set_color \
-                            "$__welcome_msg" "$white" "$italic" "$bold")"
+                            "$__welcome_msg" "$TWHITE" "$TITALIC" "$TBOLD")"
                     fi
                         printf "%s\n" "$__welcome_msg"
                     __count="$((__count+1))"
@@ -570,7 +557,7 @@ EOF
 print_help() {
 cat <<EOF
 
-$prgnam, version $version
+$NP_PRGNAM, NP_VERSION $NP_VERSION
 A command-line script to print the "Now Playing" status of
 a Plex server to stdout.
 
@@ -596,7 +583,7 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
   --width, -w <number>   Maximum number of columns width.
                          Default=0, "infinite"
 
-         --version, -v  Show version
+         --NP_VERSION, -v  Show NP_VERSION
 
          --curl <path>  Force curl as downloader.
                         (Path is optional.)
@@ -625,6 +612,29 @@ EOF
 }
 
 main() {
+    ## Optional command-line variables
+    plex_host="127.0.0.1"           # Plex server IP(s), separated by space
+    plex_port="32400"               # Default port for Plex server
+    plex_token=""                   # Auth token for Plex
+    config_file=""                  # Location for configuration file
+    max_width="0"                   # Set the maximum width of print; 0=infinite
+    dot_leader="."                  # Delimiter used for dot leader
+    color=""                        # Toggle color output--default is "auto"
+    verbose=""                      # Chatty NP_VERSION
+    dl_agent=""                     # Either curl, wget, fetch or nc
+    skip_checks=""                  # Skip dependency checks
+    plex_file=""                    # Optional XML for testing
+    timeout=1                       # Timeout for downloading xml file
+    
+    ## Global accessible variables
+    friendly_name="Plex"            # Default server name
+    server_path="/"                 # Base path for plex API
+    session_path="status/sessions"  # Path for sessions API
+    token_arg="?X-Plex-Token="      # Plex token arg
+    session_count=0                 # Toggle for active session
+
+    # Search paths for config file
+
     # Check for conf file first so command args may override
     check_conf
 
@@ -653,7 +663,7 @@ main() {
                 max_width="$2"
                 shift 2 ;;
         --delim|-d)
-		        printf "[%s]: --delim, -d is deprecated\n" "$prgnam"
+		        printf "[%s]: --delim, -d is deprecated\n" "$NP_PRGNAM"
                 dot_leader="$2"
                 shift 2 ;;
            --color)
@@ -669,7 +679,7 @@ main() {
                 plex_file="$2"
                 shift 2 ;;
         --force|-f)
-		        printf "[%s]: --force is deprecated\n" "$prgnam"
+		        printf "[%s]: --force is deprecated\n" "$NP_PRGNAM"
                 skip_checks=1
                 shift 1 ;;
             --curl)
@@ -680,7 +690,7 @@ main() {
                             shift 2 
                         else
                             printf "[%s]: Error. Cannot find %s.\n" \
-                                "$prgnam" "$2"
+                                "$NP_PRGNAM" "$2"
                             exit 1
                         fi
                         ;;
@@ -698,7 +708,7 @@ main() {
                             shift 2 
                         else
                             printf "[%s]: Error. Cannot find %s.\n" \
-                                "$prgnam" "$2"
+                                "$NP_PRGNAM" "$2"
                             exit 1
                         fi ;;
                         *)
@@ -714,7 +724,7 @@ main() {
                             shift 2 
                         else
                             printf "[%s]: Error. Cannot find %s.\n" \
-                                "$prgnam" "$2"
+                                "$NP_PRGNAM" "$2"
                             exit 1
                         fi
                         ;;
@@ -731,7 +741,7 @@ main() {
                             shift 2 
                         else
                             printf "[%s]: Error. Cannot find %s.\n" \
-                                "$prgnam" "$2"
+                                "$NP_PRGNAM" "$2"
                             exit 1
                         fi
                         ;;
@@ -746,8 +756,8 @@ main() {
          *help|-h)
                 print_help
                 exit 0 ;;
-      *version|-v)
-                printf "%s: %s\n" "$prgnam" "$version"
+      *NP_VERSION|-v)
+                printf "%s: %s\n" "$NP_PRGNAM" "$NP_VERSION"
                 exit 0 ;;
                  *)
                 log_error "$(printf "%s %s%s" "$1" \
