@@ -43,6 +43,15 @@ ${HOME}/.local/{$NP_PRGNAM}/${NP_CONFIG_FILENAME
 "
 
 ########################################################################
+## Global Configurable Vars
+########################################################################
+NP_PLEX_TOKEN=""                   # This is the only "required" var
+NP_COLOR_MODE=""                   # On, off or auto
+NP_MAX_WIDTH=""                    # Maximum columns for stdout
+NP_PLEX_HOST=""                    # Local-use only, not API
+NP_PLEX_PORT=""                    # Local-use only, not API
+
+########################################################################
 ## Global Display Text and Color Variables
 ########################################################################
 NP_HW_TRANSCODE_SYMBOL="•"         # Symbol to show hardware transcode
@@ -155,9 +164,21 @@ log() {
     printf "%s\n" "$__message"
 }
 
+log_warn() {
+    __message="$1"  # Input variable
+    __prefix="[$NP_PRGNAM] WARNING: "
+
+    if color_check; then
+        set_color "$__prefix" "$NP_LOG_WARN_COLOR" "$TBOLD"
+    else
+        printf "%s" "$__prefix"
+    fi
+    printf "%s\n" "$__message"
+}
+
 log_error() {
     __message="$1"  # Input variable
-    __prefix="[$NP_PRGNAM] Error: "
+    __prefix="[$NP_PRGNAM] ERROR: "
 
     if color_check; then
         set_color "$__prefix" "$NP_LOG_ERROR_COLOR" "$TBOLD"
@@ -166,6 +187,7 @@ log_error() {
     fi
     printf "%s\n" "$__message"
 }
+
 dependency_check() {
     if [ -n "$skip_checks" ]; then
         if [ -x "$dl_agent" ]; then
@@ -611,13 +633,65 @@ Configuration:
 EOF
 }
 
+arg_add() {
+    __var="$1"
+    __arg="$2"
+    __val="$3"
+    if [ -z "$__var" ];
+        printf "%s %s\n" "$__arg" "$__val"
+    else
+        printf "%s%s %s\n" "$__var" "$__arg" "$__val"
+    fi
+}
+
+file_exists() {
+    __filename="$1"
+    set -f
+    # shellcheck disable=2086
+    set -- $__filename
+    for __file in "$@"; do
+        if [ -r "$__file" ]; then
+            printf "%s\n" "$__file"
+            set +f
+            return
+        fi
+    done
+    set +f
+}
+
+parse_conf() {
+    __conffile="$1"
+    __return=""
+    if [ -r "$__conffile" ]; then
+        old_ifs=$IFS
+        while IFS='=' read -r key val; do
+            # Skip over lines containing comments.
+            [ "${key##\#*}" ] || continue
+              case "$key" in
+                  NP_PLEX_HOST) __return="$(arg_add "-p" "$val")" ;;
+                  NP_PLEX_PORT) __return="$(arg_add "--port" "$val")" ;;
+                  NP_PLEX_TOKEN) __return="$(arg_add "-t" "$val")" ;;
+                  NP_MAX_WIDTH) __return="$(arg_add "-w" "$val")" ;;
+                  NP_COLOR_MODE) __return="$(arg_add "-c" "$val")" ;;
+              esac
+        done < "$__conffile"
+        IFS=$old_ifs
+        printf "%s\n" "$__return"
+    else
+        log_error "$__conffile not found."
+        return 1
+    fi
+}
+
 main() {
+    command_args="$@"
+
     ## Optional command-line variables
     plex_host="127.0.0.1"           # Plex server IP(s), separated by space
     plex_port="32400"               # Default port for Plex server
     plex_token=""                   # Auth token for Plex
     config_file=""                  # Location for configuration file
-    max_width="0"                   # Set the maximum width of print; 0=infinite
+    max_width="0"                   # Set the maximum width of print; 0=inf
     dot_leader="."                  # Delimiter used for dot leader
     color=""                        # Toggle color output--default is "auto"
     verbose=""                      # Chatty NP_VERSION
@@ -633,11 +707,18 @@ main() {
     token_arg="?X-Plex-Token="      # Plex token arg
     session_count=0                 # Toggle for active session
 
-    # Search paths for config file
+    ## Local vars for main
+    __conffile=""                   # Location of config file
 
     # Check for conf file first so command args may override
-    check_conf
+    if __conffile="$(file_exists "$NP_DEFAULT_CONFIGS")"; then
+        __conf_args="$(parse_conf "$__conffile")"
+        config_args="${__conf_args} ${config_args}"
+    fi
 
+    set -f
+    # shellcheck disable=2086
+    set -- $config_args
     while [ "$#" -gt 0 ]; do
         case "$1" in 
        --config|-c)
@@ -750,13 +831,13 @@ main() {
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
-      *verbose|-V)
+      --verbose|-V)
                 verbose="1"
                 shift 1 ;;
-         *help|-h)
+         --help|-h)
                 print_help
                 exit 0 ;;
-      *NP_VERSION|-v)
+      --version|-v)
                 printf "%s: %s\n" "$NP_PRGNAM" "$NP_VERSION"
                 exit 0 ;;
                  *)
@@ -766,10 +847,23 @@ main() {
                 exit 1 ;;
         esac
     done
+    set +f
 
-    # Check for environment variables, config file
+    # If config file is given it overrides command line args
     if [ -n "$config_file" ]; then
-        get_conf
+        old_ifs=$IFS
+        while IFS='=' read -r key val; do
+            # Skip over lines containing comments.
+            [ "${key##\#*}" ] || continue
+              case "$key" in
+                  NP_PLEX_HOST) plex_host="$val" ;;
+                  NP_PLEX_PORT) plex_port="$val" ;;
+                 NP_PLEX_TOKEN) plex_token="$val" ;;
+                  NP_MAX_WIDTH) max_width="$val" ;;
+                 NP_COLOR_MODE) color="$val" ;;
+              esac
+          done < "$config_file"
+        IFS=$old_ifs
     fi
 
     # Check for and set download agent
