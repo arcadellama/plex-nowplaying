@@ -101,47 +101,8 @@ fi
 }' EXIT
 
 ########################################################################
-## String Manipulation Functions
+## FUNCTIONS: String Manipulation 
 ########################################################################
-
-## Functions
-color_check() {
-    case "$color" in
-        true|yes|on)
-            return 0 ;;
-       false|off|no)
-            return 1 ;;
-                  *)
-            if [ -x "$(command -v tput)" ]; then
-                if [ "$(tput colors)" ]; then
-                    return 0
-                fi
-            fi
-            return 1 ;;
-    esac
-}
-
-set_color() {
-    # Usage: set_color "string" "$color" "$effect" "$effect"
-    __item="$1"
-    __color="$2"
-    __fx1="$3"
-    __fx2="$4"
-
-    if [ -n "$__fx2" ]; then
-        printf "%b%b%b%s%b" "$__fx1" "$__fx2" "$__color" "$__item" "$TRESET"
-        return
-    elif [ -n "$__fx1" ]; then
-        printf "%b%b%s%b" "$__fx1" "$__color" "$__item" "$TRESET"
-        return
-    elif [ -n "$__color" ]; then
-        printf "%b%s%b" "$__color" "$__item" "$TRESET"
-        return
-    fi
-    # Don't error-out if args aren't passed
-    printf "%s" "$__item"
-}
-
 list_add() {
     __var="$1"
     __val="$2"
@@ -152,71 +113,25 @@ list_add() {
     fi
 }
 
-log() {
-    __message="$1"  # Input variable
-    __prefix="[$NP_PRGNAM]: "
-    __output=""
-
-    if color_check; then
-        __prefix="$(set_color "$__prefix" "$NP_LOG_COLOR" "$TBOLD")"
+arg_add() {
+    __var="$1"
+    __arg="$2"
+    __val="$3"
+    if [ -z "$__var" ]; then
+        printf "%s %s\n" "$__arg" "$__val"
+    else
+        printf "%s%s %s\n" "$__var" "$__arg" "$__val"
     fi
-    __output="${__prefix} ${__message}"
-    NP_LOG="$(list_add "$NP_LOG" "$__output")"
 }
 
-log_warn() {
-    __message="$1"  # Input variable
-    __prefix="[$NP_PRGNAM] WARNING: "
-    __output=""
-
-    if color_check; then
-        __prefix="$(set_color "$__prefix" "$NP_LOG_WARN_COLOR" "$TBOLD")"
-    fi
-
-    __output="${__prefix} ${__message}"
-    NP_LOG_WARN="$(list_add "$NP_LOG_WARN" "$__output")"
-}
-
-log_error() {
-    __message="$1"  # Input variable
-    __prefix="[$NP_PRGNAM] ERROR: "
-    __output=""
-
-    if color_check; then
-        __prefix="$(set_color "$__prefix" "$NP_LOG_ERROR_COLOR" "$TBOLD")"
-    fi
-
-    __output="${__prefix} ${__message}"
-    NP_LOG_ERROR="$(list_add "$NP_LOG_ERROR" "$__output")"
-}
-
-get_dl_agent() {
-    if [ -n "$skip_checks" ]; then
-        if [ -x "$dl_agent" ]; then
-            return 0
-        else
-            log_error "Download agent not found. [$dl_agent]"
-            return 1
-        fi
-    fi
-
-    for __dla in curl wget fetch nc; do
-        command -v "$__dla" && return
-    done
-    
-    log_error "curl, wget, fetch, or nc not found."
-    exit 1
-}
-
-check_conf() {
-    __conf=""
-    # disable globbing
+file_exists() {
+    __filename="$1"
     set -f
     # shellcheck disable=2086
-    set -- ${NP_DEFAULT_CONFIGS}
-    for __conf in "$@"; do
-        if [ -r "$__conf" ]; then
-            get_conf "$__conf"
+    set -- $__filename
+    for __file in "$@"; do
+        if [ -r "$__file" ]; then
+            printf "%s\n" "$__file"
             set +f
             return
         fi
@@ -291,6 +206,117 @@ fix_apostrophe() {
     set +f
 }
 
+########################################################################
+## FUNCTIONS: Colorized Output
+########################################################################
+color_check() {
+    case "$color" in
+        true|yes|on)
+            return 0 ;;
+       false|off|no)
+            return 1 ;;
+                  *)
+            if [ -x "$(command -v tput)" ]; then
+                if [ "$(tput colors)" ]; then
+                    return 0
+                fi
+            fi
+            return 1 ;;
+    esac
+}
+
+set_color() {
+    # Usage: set_color "string" "$color" "$effect" "$effect"
+    __item="$1"
+    __color="$2"
+    __fx1="$3"
+    __fx2="$4"
+
+    if [ -n "$__fx2" ]; then
+        printf "%b%b%b%s%b" "$__fx1" "$__fx2" "$__color" "$__item" "$TRESET"
+        return
+    elif [ -n "$__fx1" ]; then
+        printf "%b%b%s%b" "$__fx1" "$__color" "$__item" "$TRESET"
+        return
+    elif [ -n "$__color" ]; then
+        printf "%b%s%b" "$__color" "$__item" "$TRESET"
+        return
+    fi
+    # Don't error-out if args aren't passed
+    printf "%s" "$__item"
+}
+
+########################################################################
+## FUNCTIONS: Logging
+########################################################################
+log() {
+    __message="$1"  # Input variable
+    __prefix="[$NP_PRGNAM]: "
+    __output=""
+
+    if color_check; then
+        __prefix="$(set_color "$__prefix" "$NP_LOG_COLOR" "$TBOLD")"
+    fi
+    __output="${__prefix} ${__message}"
+    NP_LOG="$(list_add "$NP_LOG" "$__output")"
+}
+
+log_warn() {
+    __message="$1"  # Input variable
+    __prefix="[$NP_PRGNAM] WARNING: "
+    __output=""
+
+    if color_check; then
+        __prefix="$(set_color "$__prefix" "$NP_LOG_WARN_COLOR" "$TBOLD")"
+    fi
+
+    __output="${__prefix} ${__message}"
+    NP_LOG_WARN="$(list_add "$NP_LOG_WARN" "$__output")"
+}
+
+log_error() {
+    __message="$1"  # Input variable
+    __prefix="[$NP_PRGNAM] ERROR: "
+    __output=""
+
+    if color_check; then
+        __prefix="$(set_color "$__prefix" "$NP_LOG_ERROR_COLOR" "$TBOLD")"
+    fi
+
+    __output="${__prefix} ${__message}"
+    NP_LOG_ERROR="$(list_add "$NP_LOG_ERROR" "$__output")"
+}
+
+########################################################################
+## FUNCTIONS: Dependency and Configuration
+########################################################################
+get_dl_agent() {
+    return 1
+}
+
+parse_conf() {
+    __conffile="$1"
+    __return=""
+    old_ifs=$IFS
+    while IFS='=' read -r key val; do
+        # Skip over lines containing comments.
+        [ "${key##\#*}" ] || continue
+        case "$key" in
+            NP_PLEX_HOST) __return="$(arg_add "-p" "$val")" ;;
+            NP_PLEX_PORT) __return="$(arg_add "--port" "$val")" ;;
+            NP_PLEX_TOKEN) __return="$(arg_add "-t" "$val")" ;;
+            NP_MAX_WIDTH) __return="$(arg_add "-w" "$val")" ;;
+            NP_COLOR_MODE) __return="$(arg_add "-c" "$val")" ;;
+        esac
+     done < "$__conffile"
+     IFS=$old_ifs
+     printf "%s\n" "$__return"
+}
+
+
+########################################################################
+## FUNCTIONS: Download from the API
+########################################################################
 download_xml() {
     # Input variables passed from get_plexml()
     __host="$1"
@@ -345,7 +371,9 @@ get_plexml() {
     # Download the xml
     download_xml "$__host" "$__path"
 }
-
+########################################################################
+## FUNCTIONS: Parse and Show the API data
+########################################################################
 print_nowplaying() {
     # Input variables from parse_session_xml
     __number="$1"
@@ -629,51 +657,6 @@ Configuration:
 EOF
 }
 
-arg_add() {
-    __var="$1"
-    __arg="$2"
-    __val="$3"
-    if [ -z "$__var" ]; then
-        printf "%s %s\n" "$__arg" "$__val"
-    else
-        printf "%s%s %s\n" "$__var" "$__arg" "$__val"
-    fi
-}
-
-file_exists() {
-    __filename="$1"
-    set -f
-    # shellcheck disable=2086
-    set -- $__filename
-    for __file in "$@"; do
-        if [ -r "$__file" ]; then
-            printf "%s\n" "$__file"
-            set +f
-            return
-        fi
-    done
-    set +f
-}
-
-parse_conf() {
-    __conffile="$1"
-    __return=""
-    old_ifs=$IFS
-    while IFS='=' read -r key val; do
-        # Skip over lines containing comments.
-        [ "${key##\#*}" ] || continue
-        case "$key" in
-            NP_PLEX_HOST) __return="$(arg_add "-p" "$val")" ;;
-            NP_PLEX_PORT) __return="$(arg_add "--port" "$val")" ;;
-            NP_PLEX_TOKEN) __return="$(arg_add "-t" "$val")" ;;
-            NP_MAX_WIDTH) __return="$(arg_add "-w" "$val")" ;;
-            NP_COLOR_MODE) __return="$(arg_add "-c" "$val")" ;;
-        esac
-     done < "$__conffile"
-     IFS=$old_ifs
-     printf "%s\n" "$__return"
-}
-
 main() {
     command_args="$1"
     
@@ -767,7 +750,9 @@ main() {
                         fi
                         ;;
                         *)
-                        dl_agent="$(command -v curl)"
+                        if ! dl_agent="$(command -v curl)"; then
+                            log_error "Cannot find curl"
+                        fi
                         shift 1 
                 esac
                 skip_checks=1 ;;
@@ -783,7 +768,10 @@ main() {
                             exit 1
                         fi ;;
                         *)
-                        dl_agent="$(command -v wget)"
+                        if ! dl_agent="$(command -v wget)"; then
+                            log_error "Cannot find wget"
+                            exit 1
+                        fi
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
@@ -799,7 +787,10 @@ main() {
                         fi
                         ;;
                         *)
-                        dl_agent="$(command -v fetch)"
+                        if ! dl_agent="$(command -v fetch)"; then
+                            log_error "Cannot find fetch"
+                            exit 1
+                        fi
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
@@ -815,7 +806,10 @@ main() {
                         fi
                         ;;
                         *)
-                        dl_agent="$(command -v nc)"
+                        if ! dl_agent="$(command -v nc)"; then
+                            log_error "Cannot find nc"
+                            exit
+                        fi
                         shift 1 ;;
                 esac
                 skip_checks=1 ;;
@@ -856,10 +850,10 @@ main() {
 
     # Check for and set download agent
     if [ -z "$dl_agent" ]; then
-        if ! dl_agent="$(get_dl_agent)"; then
-            printf "%s\n" "$dl_agent"
-            return 1
-        fi
+        for __agent in curl wget fetch nc; do
+            dl_agent="$(command -v "$__agent")" && break
+        done
+        [ -x "$dl_agent" ] || log_error "curl, wget, fetch, or nc not found."
     fi
 
     # Debug mode check, simply cat the given xml file for testing
