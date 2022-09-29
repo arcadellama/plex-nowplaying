@@ -321,52 +321,22 @@ parse_conf() {
 ########################################################################
 download_xml() {
     # Input variables passed from get_plexml()
-    __host="$1"
-    __path="$2"
-
-    # Local variable
-    __url="${__host}${__path}"
+    __uri="$1"
 
     case "$dl_agent" in
         *curl)
-            "$dl_agent" -m "$timeout" -s "$__url"
-             return "$?"
+            "$dl_agent" -m "$timeout" -s "$__uri"
+             return
             ;;
          *wget)
-            "$dl_agent" -T "$timeout" -qO - "$__url"
-            return "$?" 
+            "$dl_agent" -T "$timeout" -qO - "$__uri"
+            return 
             ;;
          *fetch)
-            "$dl_agent" -T "$timeout" -qO - "$__url"
-            return "$?" 
+            "$dl_agent" -T "$timeout" -qO - "$__uri"
+            return 
             ;;
         esac
-}
-
-get_plexml() {
-    ## Input variables passed from main()
-    __type="$1" # either server or session
-    __host="$2"
-
-    ## Local variables
-    __path=""
-    __url=""
-
-    case "$__type" in
-        server)
-            __path="$server_path"
-            ;;
-        session)
-            __path="${server_path}${session_path}"
-            ;;
-    esac
-
-    if [ -n "$plex_token" ]; then
-        __path="${__path}${token_arg}${plex_token}"
-    fi
-
-    # Download the xml
-    download_xml "$__host" "$__path"
 }
 ########################################################################
 ## FUNCTIONS: Parse and Show the API data
@@ -514,7 +484,7 @@ parse_server_xml() {
                     log_error "$__errorMessage $(printf "%s" \
                         "See the README on how to get a PLEX AUTH TOKEN")"
                 fi
-                exit 1
+                return 1
                 ;;
             *friendlyName*)
                 get_item "friendlyName" "$line"
@@ -651,9 +621,10 @@ main() {
     command_args="$1"
     
     ## Optional command-line variables
-    plex_host=""                    # Plex server IP(s), separated by comma
-    #plex_port="32400"              # deprecated
     plex_token=""                   # Auth token for Plex
+    plex_host=""                    # Plex server IP(s), separated by comma
+    local_session=""                # Do not access plex.tv api
+    #plex_port="32400"              # deprecated
     color=""                        # Toggle color output--default is "auto"
     config_file=""                  # Location for configuration file
     max_width="0"                   # Set the maximum width of print; 0=inf
@@ -680,6 +651,7 @@ main() {
         command_args="${__conf_args} ${command_args}"
     fi
 
+    # Parse the command args 
     set -f
     # shellcheck disable=2086
     set -- $command_args
@@ -692,8 +664,9 @@ main() {
                 fi
                 config_file="$2"
                 shift 2 ;;
+        --local|-l) local_session="1" ; shift ;;
          --plex|-p)
-                plex_host="$2"
+                plex_host="$(list_add "$plex_host" "$2")"
                 shift 2 ;;
             --port)
                 log_warn "--port is deprecated; use full uri for host instead"
@@ -813,18 +786,17 @@ main() {
 
     # Check for and set download agent
     if [ -z "$dl_agent" ]; then
-        for __agent in curl wget fetch nc; do
+        for __agent in curl wget fetch; do
             dl_agent="$(command -v "$__agent")" && break
         done
-        [ -x "$dl_agent" ] || log_error "curl, wget, fetch, or nc not found."
+        [ -x "$dl_agent" ] || log_error "curl, wget, or fetch not found."
     fi
 
     # Try local defaults, for legacy reasons
     if [ -z "$plex_host" ]; then
         plex_host="127.0.0.1:32400,localhost:32400"
     fi
-    
-    __servers_found=0
+
     set -f
     # shellcheck disable=2086
     set -- $plex_host
@@ -834,27 +806,26 @@ main() {
         set -- $__server
         for __host in "$@"; do
             if ! check_uri "$__host"; then
-                __retval="$?"
                 log_warn "Missing port in uri, e.g.,'$__host:32400'" 
                 continue
             fi
-            __server_xml="$(download_xml "${__host}/")"
-            __session_xml="$(download_xml "$__host/status/sessions")"
+            if __server_xml="$(download_xml \
+                "${__host}/?X-PLEX-TOKEN=${plex_token}")"; then
+                __session_xml="$(download_xml \
+                    "$__host/status/sessions?X-PLEX-TOKEN=${plex_token}")"
 
-            if friendly_name="$(parse_server_xml "$__server_xml")"; then
-                parse_session_xml "$__session_xml" "$__host"
-                __servers_found=$((__servers_found+1))
-                break
+                if friendly_name="$(parse_server_xml "$__server_xml")"; then
+                    parse_session_xml "$__session_xml" "$__host"
+                    break
+                fi
             else
                 __retval="$?"
+                log_error "No servers found at $__host (Error code: $__retval)"
+                continue
             fi
-        done
         IFS=$old_ifs
+        done
     done
-
-    if [ "$__servers_found" -eq 0 ]; then
-        log_error "No servers found at $plex_host (Error code: $__retval)"
-        return "$__retval"
-    fi
+    set +f
 }
 main "$*"
