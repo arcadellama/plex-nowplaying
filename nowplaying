@@ -54,7 +54,7 @@ token_arg="?X-Plex-Token="      # Plex token arg
 session_count=0                 # Toggle for active session
 
 # Search paths for config file
-conf_path="$HOME/.nowplayingrc $HOME/.config/nowplaying.conf \
+conf_path="$$HOME/.nowplaying HOME/.nowplayingrc $HOME/.config/nowplaying.conf \
     /usr/local/etc/nowplaying.conf /etc/nowplaying.conf"
 
 ## Global display variables
@@ -611,6 +611,7 @@ Example: 'nowplaying -p 192.168.1.1 -w 80 -t <PLEX_AUTH_TOKEN>'
 
 Configuration:
     If no --config,-c is given, nowplaying will look in:
+            ~/.nowplaying
             ~/.nowplayingrc
             ~/.config/nowplaying.conf
             /usr/local/etc/nowplaying.conf

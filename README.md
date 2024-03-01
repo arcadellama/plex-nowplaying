@@ -74,6 +74,7 @@ I have put it in my .bashrc for the screenshot seen above.
 ## Configuration File
 If no config file is given with command, nowplaying will look for a configuration file in the following order:
 
+    ~/.nowplaying
     ~/.nowplayingrc
     ~/.config/nowplaying.conf
     /usr/local/etc/nowplaying.conf
